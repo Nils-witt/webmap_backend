@@ -14,11 +14,13 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapItem;
 import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
 import dev.nilswitt.webmap.views.components.MapItemEditDialog;
+import jakarta.annotation.security.PermitAll;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
 @Route("map-items")
-@Menu(order = 3, icon = "vaadin:map-marker", title = "Map Items")
+@Menu(order = 1, icon = "vaadin:map-marker", title = "Map Items")
+@PermitAll
 public class MapItemView extends VerticalLayout {
     private final Grid<MapItem> mapItemGrid = new Grid<>();
     private final Button createBtn = new Button("Create");

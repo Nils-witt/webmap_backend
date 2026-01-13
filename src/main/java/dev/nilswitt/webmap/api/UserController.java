@@ -39,8 +39,8 @@ public class UserController {
     // end::get-aggregate-root[]
 
     @PostMapping("")
-    EntityModel<User> newEmployee(@RequestBody User newEmployee) {
-        return this.assembler.toModel(this.userRepository.save(newEmployee));
+    EntityModel<User> newEmployee(@RequestBody User newUser) {
+        return this.assembler.toModel(this.userRepository.save(newUser));
     }
 
     // Single item

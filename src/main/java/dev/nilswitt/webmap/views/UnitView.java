@@ -14,11 +14,14 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.repositories.UnitRepository;
 import dev.nilswitt.webmap.views.components.UnitEditDialog;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
 @Route("units")
-@Menu(order = 2, icon = "vaadin:road", title = "Units")
+@Menu(order = 3, icon = "vaadin:road", title = "Units")
+@RolesAllowed("UNITS_VIEW")
 public class UnitView extends VerticalLayout {
     private final Grid<Unit> unitGrid = new Grid<>();
     private final Button createBtn = new Button("Create");

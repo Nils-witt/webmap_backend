@@ -14,13 +14,15 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
 @Route("overlays")
-@Menu(order = 1, icon = "vaadin:clipboard-check", title = "Overlays")
+@Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
+@RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
 public class OverlayView extends VerticalLayout {
     final Grid<MapOverlay> mapOverlayGrid;
     final Button createBtn;

@@ -1,16 +1,16 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.gson.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 
 @Entity
@@ -21,7 +21,7 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"username"}),
         @UniqueConstraint(columnNames = {"email"})
 })
-public class User extends AbstractEntity {
+public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
     @Size(max = 100)
@@ -49,11 +49,12 @@ public class User extends AbstractEntity {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
+            name = "user_security_group",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "group_id"))
     @JsonIgnore
-    private Set<UserRole> roles;
+    private Set<SecurityGroup> securityGroups;
+
 
     public User() {
     }
@@ -66,10 +67,28 @@ public class User extends AbstractEntity {
     }
 
 
-
-
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
     }
 
     public void setUsername(String username) {
@@ -82,6 +101,11 @@ public class User extends AbstractEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.securityGroups.stream().flatMap(securityGroup -> securityGroup.getGrantedAuthorities().stream()).toList();
     }
 
     public String getPassword() {
@@ -108,12 +132,12 @@ public class User extends AbstractEntity {
         this.lastName = lastName;
     }
 
-    public Set<UserRole> getRoles() {
-        return roles;
+    public Set<SecurityGroup> getSecurityGroups() {
+        return securityGroups;
     }
 
-    public void setRoles(Set<UserRole> roles) {
-        this.roles = roles;
+    public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
+        this.securityGroups = securityGroups;
     }
 
     @Override
@@ -138,44 +162,5 @@ public class User extends AbstractEntity {
                 ", createdAt=" + this.getCreatedAt() +
                 ", updatedAt=" + this.getUpdatedAt() +
                 '}';
-    }
-
-
-    static class UserJsonAdaptor implements JsonDeserializer<User>, JsonSerializer<User> {
-
-        @Override
-        public User deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            User user = new User();
-            if (jsonObject.has("id")) {
-                user.id = UUID.fromString(jsonObject.get("id").getAsString());
-            }
-            if (jsonObject.has("username")) {
-                user.username = jsonObject.get("username").getAsString();
-            }
-            if (jsonObject.has("email")) {
-                user.email = jsonObject.get("email").getAsString();
-            }
-            if (jsonObject.has("firstName")) {
-                user.firstName = jsonObject.get("firstName").getAsString();
-            }
-            if (jsonObject.has("lastName")) {
-                user.lastName = jsonObject.get("lastName").getAsString();
-            }
-            return user;
-        }
-
-        @Override
-        public JsonElement serialize(User user, Type type, JsonSerializationContext jsonSerializationContext) {
-            JsonObject jsonObject = new JsonObject();
-            if (user.getId() != null) {
-                jsonObject.addProperty("id", user.getId().toString());
-            }
-            jsonObject.addProperty("username", user.getUsername());
-            jsonObject.addProperty("email", user.getEmail());
-            jsonObject.addProperty("firstName", user.getFirstName());
-            jsonObject.addProperty("lastName", user.getLastName());
-            return jsonObject;
-        }
     }
 }

@@ -1,13 +1,9 @@
 package dev.nilswitt.webmap.entities;
 
-import com.google.gson.*;
-import com.google.gson.annotations.JsonAdapter;
 import jakarta.persistence.Entity;
 
-import java.lang.reflect.Type;
-
 @Entity
-public class Position extends AbstractEntity implements PositionInterface{
+public class Position extends AbstractEntity implements PositionInterface {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double altitude = 0.0;

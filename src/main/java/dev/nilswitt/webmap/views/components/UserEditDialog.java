@@ -9,9 +9,10 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.entities.UserRole;
-import dev.nilswitt.webmap.entities.repositories.UserRoleRepository;
+import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+
 
 import java.util.function.Consumer;
 
@@ -25,9 +26,9 @@ public class UserEditDialog extends Dialog {
     private final TextField lastNameField = new TextField("Last name");
     private final TextField usernameField = new TextField("Username");
     private final EmailField emailField = new EmailField("Email address");
-    private final MultiSelectComboBox<UserRole> rolesField = new MultiSelectComboBox<>("Roles");
+    private final MultiSelectComboBox<SecurityGroup> rolesField = new MultiSelectComboBox<>("Roles");
 
-    public UserEditDialog(Consumer<User> editCallback, UserRoleRepository userRoleRepository) {
+    public UserEditDialog(Consumer<User> editCallback, SecurityGroupRepository securityGroupRepository) {
         this.editCallback = editCallback;
         this.setModality(ModalityMode.STRICT);
         this.setCloseOnOutsideClick(false);
@@ -42,9 +43,9 @@ public class UserEditDialog extends Dialog {
         this.lastNameField.setRequired(true);
         this.emailField.setRequired(true);
 
-        this.rolesField.setItemLabelGenerator(UserRole::getName);
-        this.rolesField.setItems(userRoleRepository.findAll());
-        this.binder.bind(rolesField, User::getRoles, User::setRoles);
+        this.rolesField.setItemLabelGenerator(SecurityGroup::getName);
+        this.rolesField.setItems(securityGroupRepository.findAll());
+        this.binder.bind(rolesField, User::getSecurityGroups, User::setSecurityGroups);
 
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);

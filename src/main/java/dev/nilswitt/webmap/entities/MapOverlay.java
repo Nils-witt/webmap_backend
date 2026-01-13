@@ -1,8 +1,5 @@
 package dev.nilswitt.webmap.entities;
 
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
-import com.google.gson.annotations.JsonAdapter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

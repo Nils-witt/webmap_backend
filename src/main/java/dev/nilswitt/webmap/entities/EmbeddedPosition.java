@@ -1,10 +1,6 @@
 package dev.nilswitt.webmap.entities;
 
-import com.google.gson.*;
-import com.google.gson.annotations.JsonAdapter;
 import jakarta.persistence.Embeddable;
-
-import java.lang.reflect.Type;
 
 @Embeddable
 public class EmbeddedPosition implements PositionInterface {

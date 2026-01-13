@@ -1,15 +1,10 @@
 package dev.nilswitt.webmap.entities;
 
-import com.google.gson.*;
-import com.google.gson.annotations.JsonAdapter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import java.lang.reflect.Type;
 
 @Entity
 public class MapItem extends AbstractEntity {

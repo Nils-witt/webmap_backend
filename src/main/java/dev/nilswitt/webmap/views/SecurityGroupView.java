@@ -10,10 +10,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import dev.nilswitt.webmap.base.ui.MainLayout;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
-import dev.nilswitt.webmap.entities.UserRole;
-import dev.nilswitt.webmap.entities.repositories.UserRoleRepository;
-import dev.nilswitt.webmap.views.components.RoleEditDialog;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+import dev.nilswitt.webmap.views.components.SecurityGroupEditDialog;
+import jakarta.annotation.security.PermitAll;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -22,19 +24,20 @@ import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route("roles")
-@Menu(order = 1, icon = "vaadin:key", title = "Roles")
-public class RolesView extends VerticalLayout {
-    final Grid<UserRole> userRoleGrid;
+@Route(value = "groups", layout = MainLayout.class)
+@Menu(order = 4, icon = "vaadin:key", title = "Roles")
+@PermitAll
+public class SecurityGroupView extends VerticalLayout {
+    final Grid<SecurityGroup> securityGroupGrid;
     final Button createBtn;
-    final RoleEditDialog editDialog;
+    final SecurityGroupEditDialog editDialog;
 
-    public RolesView(UserRoleRepository userRoleRepository) {
-        this.userRoleGrid = new Grid<>();
+    public SecurityGroupView(SecurityGroupRepository repository) {
+        this.securityGroupGrid = new Grid<>();
 
-        this.editDialog = new RoleEditDialog((userRole) -> {
-            userRoleRepository.save(userRole);
-            userRoleGrid.getDataProvider().refreshAll();
+        this.editDialog = new SecurityGroupEditDialog((securityGroup) -> {
+            repository.save(securityGroup);
+            securityGroupGrid.getDataProvider().refreshAll();
         });
 
 
@@ -47,28 +50,28 @@ public class RolesView extends VerticalLayout {
                 .withZone(ZoneId.systemDefault());
         var dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(getLocale());
 
-        userRoleGrid.setItems(query -> userRoleRepository.findAll(toSpringPageRequest(query)).stream());
-        userRoleGrid.addColumn(UserRole::getName).setHeader("Name");
+        securityGroupGrid.setItems(query -> repository.findAll(toSpringPageRequest(query)).stream());
+        securityGroupGrid.addColumn(SecurityGroup::getName).setHeader("Name");
 
-        userRoleGrid.setEmptyStateText("There are no roles");
-        userRoleGrid.setSizeFull();
-        userRoleGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        GridContextMenu<UserRole> menu = userRoleGrid.addContextMenu();
+        securityGroupGrid.setEmptyStateText("There are no roles");
+        securityGroupGrid.setSizeFull();
+        securityGroupGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+        GridContextMenu<SecurityGroup> menu = securityGroupGrid.addContextMenu();
         menu.addItem("Edit", event -> {
-            Optional<UserRole> item = event.getItem();
+            Optional<SecurityGroup> item = event.getItem();
             item.ifPresent(editDialog::open);
         });
         menu.addItem("Delete", event -> {
-            Optional<UserRole> item = event.getItem();
+            Optional<SecurityGroup> item = event.getItem();
             item.ifPresent(userRole -> {
                 ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader("Delete Role");
+                confirmDialog.setHeader("Delete Group");
                 confirmDialog.setText("Are you sure you want to delete role '" + userRole.getName() + "'?");
                 confirmDialog.setCancelable(true);
                 confirmDialog.setConfirmText("Delete");
                 confirmDialog.addConfirmListener(e -> {
-                    userRoleRepository.delete(userRole);
-                    userRoleGrid.getDataProvider().refreshAll();
+                    repository.delete(userRole);
+                    securityGroupGrid.getDataProvider().refreshAll();
                     confirmDialog.close();
                     this.remove(confirmDialog);
                 });
@@ -81,8 +84,8 @@ public class RolesView extends VerticalLayout {
         setSpacing(false);
         getStyle().setOverflow(Style.Overflow.HIDDEN);
 
-        add(new ViewToolbar("Role List", ViewToolbar.group(createBtn)));
-        add(userRoleGrid);
+        add(new ViewToolbar("Security Groups", ViewToolbar.group(createBtn)));
+        add(securityGroupGrid);
         add(editDialog);
     }
 }
