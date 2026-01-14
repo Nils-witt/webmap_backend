@@ -19,7 +19,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route("units")
+@Route("ui/units")
 @Menu(order = 3, icon = "vaadin:road", title = "Units")
 @RolesAllowed("UNITS_VIEW")
 public class UnitView extends VerticalLayout {

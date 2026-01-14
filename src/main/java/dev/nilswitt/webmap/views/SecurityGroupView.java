@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route(value = "groups", layout = MainLayout.class)
+@Route(value = "ui/groups", layout = MainLayout.class)
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")
 @PermitAll
 public class SecurityGroupView extends VerticalLayout {

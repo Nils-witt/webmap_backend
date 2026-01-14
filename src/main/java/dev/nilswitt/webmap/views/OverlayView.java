@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route("overlays")
+@Route("ui/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
 @RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
 public class OverlayView extends VerticalLayout {

@@ -45,6 +45,7 @@ public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
     @Column(nullable = false, length = 100)
+    @JsonIgnore
     private String password = "NaN";
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -139,6 +140,7 @@ public class User extends AbstractEntity implements UserDetails {
     public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
         this.securityGroups = securityGroups;
     }
+
 
     @Override
     public boolean equals(Object o) {

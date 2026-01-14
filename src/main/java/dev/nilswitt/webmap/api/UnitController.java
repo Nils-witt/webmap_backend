@@ -18,11 +18,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("api/units")
 public class UnitController {
 
-    private final UnitRepository unitRepository;
+    private final UnitRepository repository;
     private final UnitModelAssembler assembler;
 
     public UnitController(UnitRepository userRepository, UnitModelAssembler assembler) {
-        this.unitRepository = userRepository;
+        this.repository = userRepository;
         this.assembler = assembler;
     }
 
@@ -30,7 +30,7 @@ public class UnitController {
     // tag::get-aggregate-root[]
     @GetMapping("")
     CollectionModel<EntityModel<Unit>> all() {
-        List<EntityModel<Unit>> users = this.unitRepository.findAll().stream()
+        List<EntityModel<Unit>> users = this.repository.findAll().stream()
                 .map(this.assembler::toModel)
                 .collect(Collectors.toList());
 
@@ -39,8 +39,8 @@ public class UnitController {
     // end::get-aggregate-root[]
 
     @PostMapping("")
-    EntityModel<Unit> newEmployee(@RequestBody Unit newUnit) {
-        return this.assembler.toModel(this.unitRepository.save(newUnit));
+    EntityModel<Unit> newEntity(@RequestBody Unit newEntity) {
+        return this.assembler.toModel(this.repository.save(newEntity));
     }
 
     // Single item
@@ -49,15 +49,15 @@ public class UnitController {
     EntityModel<Unit> one(@PathVariable UUID id) {
 
         return this.assembler.toModel(
-                this.unitRepository.findById(id)
+                this.repository.findById(id)
                         .orElseThrow(() -> new UnitNotFoundException(id))
         );
     }
 
     @PutMapping("{id}")
-    EntityModel<Unit> replaceUnit(@RequestBody Unit newEntity, @PathVariable UUID id) {
+    EntityModel<Unit> replaceEntity(@RequestBody Unit newEntity, @PathVariable UUID id) {
 
-        Unit entity = this.unitRepository.findById(id)
+        Unit entity = this.repository.findById(id)
                 .orElseThrow(() -> new UnitNotFoundException(id));
 
         entity.setName(newEntity.getName());
@@ -65,11 +65,11 @@ public class UnitController {
         entity.setStatus(newEntity.getStatus());
         entity.setSpeakRequest(newEntity.isSpeakRequest());
 
-        return this.assembler.toModel(this.unitRepository.save(entity));
+        return this.assembler.toModel(this.repository.save(entity));
     }
 
     @DeleteMapping("{id}")
-    void deleteEmployee(@PathVariable UUID id) {
-        this.unitRepository.deleteById(id);
+    void deleteEntity(@PathVariable UUID id) {
+        this.repository.deleteById(id);
     }
 }

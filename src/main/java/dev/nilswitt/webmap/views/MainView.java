@@ -5,14 +5,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.security.AuthenticationContext;
+import dev.nilswitt.webmap.base.ui.MainLayout;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Route("")
+@Route(value = "ui", layout = MainLayout.class)
+@RouteAlias("")
 @Menu(order = 0, icon = "vaadin:user", title = "Home")
 @PermitAll
 public class MainView extends VerticalLayout {

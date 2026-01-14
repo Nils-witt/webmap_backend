@@ -6,7 +6,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import jakarta.annotation.security.PermitAll;
 
-@Route("logout")
+@Route("ui/logout")
 @PermitAll
 public class LogoutView extends VerticalLayout {
 

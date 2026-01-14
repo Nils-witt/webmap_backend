@@ -16,17 +16,22 @@ import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.events.ChangeType;
+import dev.nilswitt.webmap.events.EntityChangedEvent;
 import dev.nilswitt.webmap.views.components.PasswordChangeDialog;
 import dev.nilswitt.webmap.views.components.UserEditDialog;
+import jakarta.annotation.security.PermitAll;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route("users")
+@Route("ui/users")
 @Menu(order = 5, icon = "vaadin:user", title = "Users")
-@AnonymousAllowed
+@PermitAll
 public class UserView extends VerticalLayout {
     final Grid<User> userGrid;
     final Button createBtn;
@@ -35,14 +40,15 @@ public class UserView extends VerticalLayout {
     final UserRepository userRepository;
     final PasswordEncoder passwordEncoder;
 
-    public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder) {
+    public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder, ApplicationEventPublisher events) {
         this.userGrid = new Grid<>();
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordChangeDialog = new PasswordChangeDialog(userRepository, passwordEncoder);
 
         this.editDialog = new UserEditDialog((user) -> {
-            userRepository.save(user);
+            User saved = userRepository.save(user);
+            events.publishEvent(new EntityChangedEvent<>(User.class, saved, ChangeType.UPDATED, user.getId(), new HashMap<>()));
             userGrid.getDataProvider().refreshAll();
         }, securityGroupRepository);
 
