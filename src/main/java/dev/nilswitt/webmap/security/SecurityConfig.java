@@ -31,7 +31,7 @@ class SecurityConfig {
         // Configure Vaadin's security using VaadinSecurityConfigurer
         http.securityMatcher("/ui/**","/login","/", "/VAADIN/**").with(VaadinSecurityConfigurer.vaadin(), configurer -> {
             configurer.loginView(LoginView.class, "/logged-out.html");
-            configurer.defaultSuccessUrl("/ui", true);
+            configurer.defaultSuccessUrl("/ui");
         });
 
         return http.build();

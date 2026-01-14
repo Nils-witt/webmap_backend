@@ -10,21 +10,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
-import dev.nilswitt.webmap.events.ChangeType;
-import dev.nilswitt.webmap.events.EntityChangedEvent;
 import dev.nilswitt.webmap.views.components.PasswordChangeDialog;
 import dev.nilswitt.webmap.views.components.UserEditDialog;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
@@ -40,15 +36,14 @@ public class UserView extends VerticalLayout {
     final UserRepository userRepository;
     final PasswordEncoder passwordEncoder;
 
-    public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder, ApplicationEventPublisher events) {
+    public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder) {
         this.userGrid = new Grid<>();
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordChangeDialog = new PasswordChangeDialog(userRepository, passwordEncoder);
 
         this.editDialog = new UserEditDialog((user) -> {
-            User saved = userRepository.save(user);
-            events.publishEvent(new EntityChangedEvent<>(User.class, saved, ChangeType.UPDATED, user.getId(), new HashMap<>()));
+            userRepository.save(user);
             userGrid.getDataProvider().refreshAll();
         }, securityGroupRepository);
 
@@ -57,12 +52,13 @@ public class UserView extends VerticalLayout {
             editDialog.open(null);
         });
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         userGrid.setItems(query -> userRepository.findAll(toSpringPageRequest(query)).stream());
         userGrid.addColumn(User::getUsername).setHeader("Username");
         userGrid.addColumn(User::getFirstName).setHeader("First Name");
         userGrid.addColumn(User::getLastName).setHeader("Last Name");
         userGrid.addColumn(User::getEmail).setHeader("Email");
+        userGrid.addColumn(User::isEnabled).setHeader("Enabled");
+        userGrid.addColumn(u -> !u.isAccountNonLocked()).setHeader("Is Locked");
         userGrid.addColumn(user -> String.join(", ", user.getSecurityGroups().stream().map(SecurityGroup::getName).toList()))
                 .setHeader("Groups");
 

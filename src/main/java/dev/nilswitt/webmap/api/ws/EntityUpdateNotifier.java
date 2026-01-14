@@ -27,10 +27,9 @@ public class EntityUpdateNotifier {
 
     @EventListener
     public void onUserNameChanged(EntityChangedEvent<? extends AbstractEntity> event) {
-        log.info("Event Received");
 
         Payload payload = buildPayload(event);
-        String topic = "/updates/entities/" + event.clazz().getSimpleName() + "/" + event.id();
+        String topic = "/updates/entities/" + event.className() + "/" + event.id();
 
         DownstreamMessage message = new DownstreamMessage();
         message.topic = topic;
@@ -39,15 +38,8 @@ public class EntityUpdateNotifier {
         String json = ow.writeValueAsString(message);
         log.info("Sending update to topic {}", topic);
 
-        for (WebSocketSession session : registry.getSessionsForSubscription(topic)) {
-            try {
-                if (session.isOpen()) {
-                    session.sendMessage(new TextMessage(json));
-                }
-            } catch (Exception e) {
-                log.warn("Failed to send user update to session {}", session.getId(), e);
-            }
-        }
+        registry.notifyTopic(topic,json);
+
     }
 
     private Payload buildPayload(EntityChangedEvent<? extends AbstractEntity> event) {
@@ -55,7 +47,6 @@ public class EntityUpdateNotifier {
         payload.entityType = event.entity().getClass().getSimpleName();
         payload.entityId = event.id();
         payload.changeType = event.changeType();
-        payload.changes = event.changes().toString();
         payload.entity = event.entity();
         return payload;
 
@@ -73,7 +64,6 @@ public class EntityUpdateNotifier {
         public String entityType;
         public UUID entityId;
         public ChangeType changeType;
-        public String changes;
         public AbstractEntity entity;
     }
 

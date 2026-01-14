@@ -3,6 +3,7 @@ package dev.nilswitt.webmap.views.components;
 import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -26,6 +27,8 @@ public class UserEditDialog extends Dialog {
     private final TextField lastNameField = new TextField("Last name");
     private final TextField usernameField = new TextField("Username");
     private final EmailField emailField = new EmailField("Email address");
+    private final Checkbox enabledCheckbox = new Checkbox("Enabled");
+    private final Checkbox lockedCheckbox = new Checkbox("Locked");
     private final MultiSelectComboBox<SecurityGroup> rolesField = new MultiSelectComboBox<>("Roles");
 
     public UserEditDialog(Consumer<User> editCallback, SecurityGroupRepository securityGroupRepository) {
@@ -47,11 +50,15 @@ public class UserEditDialog extends Dialog {
         this.rolesField.setItems(securityGroupRepository.findAll());
         this.binder.bind(rolesField, User::getSecurityGroups, User::setSecurityGroups);
 
+        this.binder.bind(enabledCheckbox, User::isEnabled, User::setEnabled);
+        this.binder.bind(lockedCheckbox, (user) -> !user.isAccountNonLocked(), User::setLocked);
+
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);
         formLayout.addFormRow(this.firstNameField, this.lastNameField);
         formLayout.addFormRow(this.usernameField, this.emailField);
         formLayout.addFormRow(this.rolesField);
+        formLayout.addFormRow(this.enabledCheckbox, this.lockedCheckbox);
 
 
         Button saveButton = new Button("Save", event -> {

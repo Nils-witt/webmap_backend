@@ -6,6 +6,7 @@ import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -13,15 +14,14 @@ import java.util.Date;
 @Component
 public class JWTComponent {
 
-    private static final String SECRET_KEY =
-            "my-super-secure-secret-key-for-jwt-signing-12345my-super-secure-secret-key-for-jwt-signing-12345my-super-secure-secret-key-for-jwt-signing-12345my-super-secure-secret-key-for-jwt-signing-12345my-super-secure-secret-key-for-jwt-signing-12345";
-
     private static final long EXPIRATION_MS = 15 * 60 * 1000;
 
     private final UserRepository userRepository;
+    private final String SECRET_KEY;
 
-    public JWTComponent(UserRepository userRepository) {
+    public JWTComponent(UserRepository userRepository, @Value("${application.security.jwt_secret}") String secret) {
         this.userRepository = userRepository;
+        this.SECRET_KEY = secret;
 
     }
 

@@ -1,6 +1,7 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -21,6 +23,7 @@ import java.util.Set;
         @UniqueConstraint(columnNames = {"username"}),
         @UniqueConstraint(columnNames = {"email"})
 })
+@EntityListeners(EntityEventListener.class)
 public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
@@ -56,10 +59,23 @@ public class User extends AbstractEntity implements UserDetails {
     @JsonIgnore
     private Set<SecurityGroup> securityGroups;
 
+    @Column
+    private boolean isEnabled = true;
+
+    @Column
+    private boolean isLocked = false;
 
     public User() {
     }
 
+    /**
+     * Constructor for creating a user
+     *
+     * @param username
+     * @param email
+     * @param firstName
+     * @param lastName
+     */
     public User(String username, String email, String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -79,7 +95,7 @@ public class User extends AbstractEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return !this.isLocked;
     }
 
     @Override
@@ -89,7 +105,7 @@ public class User extends AbstractEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.isEnabled;
     }
 
     public void setUsername(String username) {
@@ -141,6 +157,20 @@ public class User extends AbstractEntity implements UserDetails {
         this.securityGroups = securityGroups;
     }
 
+    public void addSecurityGroup(SecurityGroup securityGroup) {
+        if (this.securityGroups == null) {
+            this.securityGroups = new HashSet<>();
+        }
+        this.securityGroups.add(securityGroup);
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
+    }
 
     @Override
     public boolean equals(Object o) {
