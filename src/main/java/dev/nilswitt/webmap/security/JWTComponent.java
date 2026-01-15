@@ -9,7 +9,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 @Component
 public class JWTComponent {
@@ -27,10 +29,16 @@ public class JWTComponent {
 
 
     public String generateToken(String username) {
+        HashMap<String, Object> claims = new HashMap<>();
+
+        claims.put("overlays", new ArrayList<>());
+        claims.put("is_superuser", true);
+        claims.put("view_all", true);
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .addClaims(claims)
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()), SignatureAlgorithm.HS512)
                 .compact();
     }
