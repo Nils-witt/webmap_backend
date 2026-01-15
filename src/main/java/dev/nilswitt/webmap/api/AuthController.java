@@ -1,8 +1,10 @@
 package dev.nilswitt.webmap.api;
 
+import dev.nilswitt.webmap.api.exceptions.UnauthorizedException;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import dev.nilswitt.webmap.security.JWTComponent;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,9 +28,22 @@ public class AuthController {
 
 
     @GetMapping
-    Map<String, Object> validate() {
-
-        return Map.of("valid", true);
+    Map<String, Object> validate(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        logger.info("Validating token: {}", token);
+        try {
+            if (token == null) {
+                throw new UnauthorizedException();
+            }
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            User user = this.jwtHandler.getUserFromToken(token);
+            return Map.of("valid", true, "user", user);
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw new UnauthorizedException();
+        }
     }
 
     @PostMapping
