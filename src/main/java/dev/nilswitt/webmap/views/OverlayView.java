@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
-@Route("ui/overlays")
+@Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
 @RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
 public class OverlayView extends VerticalLayout {
@@ -43,6 +43,8 @@ public class OverlayView extends VerticalLayout {
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         mapOverlayGrid.setItems(query -> mapOverlayRepository.findAll(toSpringPageRequest(query)).stream());
         mapOverlayGrid.addColumn(MapOverlay::getName).setHeader("Name");
+        mapOverlayGrid.addColumn(MapOverlay::getFullTileUrl).setHeader("Url");
+        mapOverlayGrid.addColumn(MapOverlay::getLayerVersion).setHeader("Layer Version");
 
         mapOverlayGrid.setEmptyStateText("There are no overlays");
         mapOverlayGrid.setSizeFull();

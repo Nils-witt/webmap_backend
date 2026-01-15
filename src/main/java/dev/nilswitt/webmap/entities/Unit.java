@@ -1,14 +1,12 @@
 package dev.nilswitt.webmap.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "units")
+@EntityListeners(EntityEventListener.class)
 public class Unit extends AbstractEntity {
 
     @NotBlank

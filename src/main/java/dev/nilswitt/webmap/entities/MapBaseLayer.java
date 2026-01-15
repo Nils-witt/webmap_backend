@@ -2,24 +2,23 @@ package dev.nilswitt.webmap.entities;
 
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
 @EntityListeners(EntityEventListener.class)
-public class MapItem extends AbstractEntity {
+public class MapBaseLayer extends AbstractEntity {
 
     @NotBlank
     @Size(max = 100)
     @Column(nullable = false, unique = false, length = 100)
     private String name;
 
-
-    @Embedded
-    private EmbeddedPosition position;
+    @Column(nullable = false, unique = false, length = 100)
+    private String url;
 
 
     public String getName() {
@@ -30,16 +29,11 @@ public class MapItem extends AbstractEntity {
         this.name = name;
     }
 
-    public EmbeddedPosition getPosition() {
-        if (position == null) {
-            position = new EmbeddedPosition();
-        }
-        return position;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPosition(EmbeddedPosition position) {
-        this.position = position;
+    public void setUrl(String url) {
+        this.url = url;
     }
-
-
 }

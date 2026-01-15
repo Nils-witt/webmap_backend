@@ -5,10 +5,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import dev.nilswitt.webmap.entities.MapOverlay;
-import dev.nilswitt.webmap.entities.User;
 
 import java.util.function.Consumer;
 
@@ -19,6 +19,10 @@ public class MapOverlayEditDialog extends Dialog {
     private final Consumer<MapOverlay> editCallback;
 
     private final TextField nameField = new TextField("Name");
+    private final TextField baseUrlField = new TextField("Base Url");
+    private final TextField basePathField = new TextField("Base Path");
+    private final TextField tilePatternField = new TextField("Tile Pattern");
+    private final IntegerField layerVersionField = new IntegerField("Version");
 
 
     public MapOverlayEditDialog(Consumer<MapOverlay> editCallback) {
@@ -26,14 +30,26 @@ public class MapOverlayEditDialog extends Dialog {
         this.setModality(ModalityMode.STRICT);
         this.setCloseOnOutsideClick(false);
         this.setHeaderTitle("Edit Overlay");
-
+        this.setWidth("100%");
         this.binder.bind(nameField, MapOverlay::getName, MapOverlay::setName);
+        this.binder.bind(baseUrlField, MapOverlay::getBaseUrl, MapOverlay::setBaseUrl);
+        this.binder.bind(basePathField, MapOverlay::getBasePath, MapOverlay::setBasePath);
+        this.binder.bind(tilePatternField, MapOverlay::getTilePathPattern, MapOverlay::setTilePathPattern);
+        this.binder.bind(layerVersionField, MapOverlay::getLayerVersion, MapOverlay::setLayerVersion);
 
         this.nameField.setRequired(true);
+
+        this.layerVersionField.setMin(0);
+        this.layerVersionField.setStepButtonsVisible(true);
+        this.layerVersionField.setStep(1);
 
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);
         formLayout.addFormRow(this.nameField);
+        formLayout.addFormRow(this.baseUrlField);
+        formLayout.addFormRow(this.basePathField);
+        formLayout.addFormRow(this.tilePatternField);
+        formLayout.addFormRow(this.layerVersionField);
 
 
         Button saveButton = new Button("Save", event -> {
