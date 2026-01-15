@@ -16,14 +16,15 @@ import java.util.HashMap;
 @Component
 public class JWTComponent {
 
-    private static final long EXPIRATION_MS = 15 * 60 * 1000;
+    private final long EXPIRATION_MS;
 
     private final UserRepository userRepository;
     private final String SECRET_KEY;
 
-    public JWTComponent(UserRepository userRepository, @Value("${application.security.jwt_secret}") String secret) {
+    public JWTComponent(UserRepository userRepository, @Value("${application.security.jwt_secret}") String secret, @Value("${application.security.jwt_expiration_ms:10}") long expirationMs) {
         this.userRepository = userRepository;
         this.SECRET_KEY = secret;
+        this.EXPIRATION_MS = expirationMs;
 
     }
 
