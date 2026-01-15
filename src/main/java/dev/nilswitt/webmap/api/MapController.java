@@ -13,20 +13,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("api")
-public class ApiController {
+@RequestMapping("api/map")
+public class MapController {
 
-    // Aggregate root
-    // tag::get-aggregate-root[]
     @GetMapping("")
     CollectionModel<EntityModel<Unit>> all() {
 
         return CollectionModel.of(new ArrayList<>(),
-                linkTo(methodOn(UserController.class).all()).withRel("users"),
-                linkTo(methodOn(UnitController.class).all()).withRel("units"),
-                linkTo(methodOn(MapController.class).all()).withRel("map")
+                linkTo(methodOn(MapBaseLayerController.class).all()).withRel("baselayers"),
+                linkTo(methodOn(MapOverlayController.class).all()).withRel("overlays"),
+                linkTo(methodOn(MapItemController.class).all()).withRel("items")
                 );
     }
-    // end::get-aggregate-root[]
-
 }
