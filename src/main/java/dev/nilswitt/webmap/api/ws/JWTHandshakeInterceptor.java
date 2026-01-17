@@ -1,6 +1,5 @@
 package dev.nilswitt.webmap.api.ws;
 
-import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;

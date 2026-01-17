@@ -1,6 +1,5 @@
 package dev.nilswitt.webmap.api;
 
-import dev.nilswitt.webmap.entities.MapItem;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

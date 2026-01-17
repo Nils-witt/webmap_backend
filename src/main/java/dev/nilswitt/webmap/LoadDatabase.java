@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -20,10 +21,12 @@ class LoadDatabase {
 
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
+
     @Bean
     CommandLineRunner initDatabase(UserRepository repository, SecurityGroupRepository securityGroupRepository, DatabaseInitAdminUserRecord adminUserRecord, PasswordEncoder passwordEncoder) {
         Optional<SecurityGroup> adminGroupOpt = securityGroupRepository.findByName("SuperAdmins");
         SecurityGroup adminGroup;
+
         if (adminGroupOpt.isEmpty()) {
             adminGroup = new SecurityGroup("SuperAdmins", new HashSet<>(SecurityGroup.availableRoles()));
 

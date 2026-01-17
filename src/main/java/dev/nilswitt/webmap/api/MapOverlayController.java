@@ -1,10 +1,7 @@
 package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.MapOverlayNotFoundException;
-import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
 import dev.nilswitt.webmap.entities.MapOverlay;
-import dev.nilswitt.webmap.entities.MapOverlay;
-import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;

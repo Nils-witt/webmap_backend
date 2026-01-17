@@ -1,15 +1,12 @@
 package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.MapItemNotFoundException;
-import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
 import dev.nilswitt.webmap.entities.MapItem;
-import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,7 +20,6 @@ public class MapItemController {
 
     private final MapItemRepository repository;
     private final MapItemModelAssembler assembler;
-
 
 
     public MapItemController(MapItemRepository repository, MapItemModelAssembler assembler) {
@@ -67,6 +63,7 @@ public class MapItemController {
 
         entity.setName(newEntity.getName());
         entity.setPosition(newEntity.getPosition());
+
 
         return this.assembler.toModel(this.repository.save(entity));
     }

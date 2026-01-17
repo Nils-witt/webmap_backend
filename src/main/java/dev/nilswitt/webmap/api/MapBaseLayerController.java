@@ -2,9 +2,7 @@ package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.MapItemNotFoundException;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
-import dev.nilswitt.webmap.entities.MapItem;
 import dev.nilswitt.webmap.entities.repositories.MapBaseLayerRepository;
-import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;

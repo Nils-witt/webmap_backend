@@ -10,10 +10,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
+import dev.nilswitt.webmap.records.OverlayConfig;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
+import dev.nilswitt.webmap.views.components.UploadOverlayDialog;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.Optional;
@@ -22,13 +25,15 @@ import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRe
 
 @Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
-@RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
+//@RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
+@AnonymousAllowed
 public class OverlayView extends VerticalLayout {
     final Grid<MapOverlay> mapOverlayGrid;
     final Button createBtn;
     final MapOverlayEditDialog editDialog;
+    private final OverlayConfig overlayConfig;
 
-    public OverlayView(MapOverlayRepository mapOverlayRepository) {
+    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig) {
         this.mapOverlayGrid = new Grid<>();
 
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
@@ -50,6 +55,16 @@ public class OverlayView extends VerticalLayout {
         mapOverlayGrid.setSizeFull();
         mapOverlayGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         GridContextMenu<MapOverlay> menu = mapOverlayGrid.addContextMenu();
+
+        menu.addItem("upload" , event -> {
+            Optional<MapOverlay> item = event.getItem();
+            item.ifPresent(mapOverlay -> {
+                UploadOverlayDialog uploadOverlayDialog = new UploadOverlayDialog(mapOverlayRepository, mapOverlay, overlayConfig);
+                this.add(uploadOverlayDialog);
+                uploadOverlayDialog.open();
+
+            });
+        });
         menu.addItem("Edit", event -> {
             Optional<MapOverlay> item = event.getItem();
             item.ifPresent(editDialog::open);
@@ -80,5 +95,6 @@ public class OverlayView extends VerticalLayout {
         add(new ViewToolbar("Overlay List", ViewToolbar.group(createBtn)));
         add(mapOverlayGrid);
         add(editDialog);
+        this.overlayConfig = overlayConfig;
     }
 }

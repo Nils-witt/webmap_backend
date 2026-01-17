@@ -1,7 +1,6 @@
 package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.entities.MapItem;
-import dev.nilswitt.webmap.entities.Unit;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
