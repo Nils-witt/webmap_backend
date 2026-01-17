@@ -15,12 +15,13 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
 import dev.nilswitt.webmap.entities.repositories.MapBaseLayerRepository;
 import dev.nilswitt.webmap.views.components.MapBaseLayerEditDialog;
+import jakarta.annotation.security.RolesAllowed;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
 @Route("ui/map/baselayer")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Base Layer")
-@AnonymousAllowed
+@RolesAllowed("ROLE_MAP_BASELAYERS_VIEW")
 public class MapBaseLayerView extends VerticalLayout {
     private final Grid<MapBaseLayer> mapBaseLayerGrid = new Grid<>();
     private final Button createBtn = new Button("Create");

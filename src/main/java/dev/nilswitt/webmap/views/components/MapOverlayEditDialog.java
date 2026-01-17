@@ -3,12 +3,15 @@ package dev.nilswitt.webmap.views.components;
 import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import dev.nilswitt.webmap.entities.MapOverlay;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 
 import java.util.function.Consumer;
 
@@ -23,9 +26,12 @@ public class MapOverlayEditDialog extends Dialog {
     private final TextField basePathField = new TextField("Base Path");
     private final TextField tilePatternField = new TextField("Tile Pattern");
     private final IntegerField layerVersionField = new IntegerField("Version");
+    private final MultiSelectComboBox<SecurityGroup> securityGroupsField = new MultiSelectComboBox<>("Security Groups");
+    private final SecurityGroupRepository securityGroupRepository;
 
 
-    public MapOverlayEditDialog(Consumer<MapOverlay> editCallback) {
+    public MapOverlayEditDialog(Consumer<MapOverlay> editCallback, SecurityGroupRepository securityGroupRepository) {
+        this.securityGroupRepository = securityGroupRepository;
         this.editCallback = editCallback;
         this.setModality(ModalityMode.STRICT);
         this.setCloseOnOutsideClick(false);
@@ -36,6 +42,10 @@ public class MapOverlayEditDialog extends Dialog {
         this.binder.bind(basePathField, MapOverlay::getBasePath, MapOverlay::setBasePath);
         this.binder.bind(tilePatternField, MapOverlay::getTilePathPattern, MapOverlay::setTilePathPattern);
         this.binder.bind(layerVersionField, MapOverlay::getLayerVersion, MapOverlay::setLayerVersion);
+        this.binder.bind(securityGroupsField, MapOverlay::getSecurityGroups, MapOverlay::setSecurityGroups);
+
+        this.securityGroupsField.setItemLabelGenerator(SecurityGroup::getName);
+        this.securityGroupsField.setItems(securityGroupRepository.findAll());
 
         this.nameField.setRequired(true);
 
@@ -50,6 +60,7 @@ public class MapOverlayEditDialog extends Dialog {
         formLayout.addFormRow(this.basePathField);
         formLayout.addFormRow(this.tilePatternField);
         formLayout.addFormRow(this.layerVersionField);
+        formLayout.addFormRow(this.securityGroupsField);
 
 
         Button saveButton = new Button("Save", event -> {

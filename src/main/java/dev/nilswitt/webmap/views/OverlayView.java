@@ -14,6 +14,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
+import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.records.OverlayConfig;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
 import dev.nilswitt.webmap.views.components.UploadOverlayDialog;
@@ -25,21 +26,20 @@ import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRe
 
 @Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
-//@RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
-@AnonymousAllowed
+@RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
 public class OverlayView extends VerticalLayout {
     final Grid<MapOverlay> mapOverlayGrid;
     final Button createBtn;
     final MapOverlayEditDialog editDialog;
     private final OverlayConfig overlayConfig;
 
-    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig) {
+    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig, SecurityGroupRepository securityGroupRepository) {
         this.mapOverlayGrid = new Grid<>();
 
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
             mapOverlayRepository.save(mapOverlay);
             mapOverlayGrid.getDataProvider().refreshAll();
-        });
+        },securityGroupRepository);
 
 
         createBtn = new Button("Create", event -> {

@@ -52,7 +52,7 @@ public class AuthController {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(authRequest.password, user.getPassword())) {
-                String token = this.jwtHandler.generateToken(authRequest.username);
+                String token = this.jwtHandler.generateToken(user);
                 return Map.of("token", token);
             }
         }

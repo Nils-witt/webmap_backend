@@ -24,6 +24,10 @@ public class SecurityGroup extends AbstractEntity {
     @JsonIgnore
     private Set<User> users;
 
+    @ManyToMany(mappedBy = "securityGroups")
+    @JsonIgnore
+    private Set<MapOverlay> overlays;
+
     @Column
     private Set<String> roles;
 
@@ -51,6 +55,7 @@ public class SecurityGroup extends AbstractEntity {
 
     public enum UserRoleTypeEnum {
         MAP_OVERLAYS,
+        MAP_BASELAYERS,
         USERS,
         USER_ROLES,
         UNITS,
@@ -96,5 +101,13 @@ public class SecurityGroup extends AbstractEntity {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public Set<MapOverlay> getOverlays() {
+        return overlays;
+    }
+
+    public void setOverlays(Set<MapOverlay> overlays) {
+        this.overlays = overlays;
     }
 }

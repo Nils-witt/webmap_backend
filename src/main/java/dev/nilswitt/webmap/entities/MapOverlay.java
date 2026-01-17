@@ -1,12 +1,13 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.util.Set;
 
 @Entity
 @EntityListeners(EntityEventListener.class)
@@ -28,6 +29,14 @@ public class MapOverlay extends AbstractEntity {
 
     @Column
     private int layerVersion = 0;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "map_overlay_security_group",
+            joinColumns = @JoinColumn(name = "overlay_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id"))
+    @JsonIgnore
+    private Set<SecurityGroup> securityGroups;
 
     public String getName() {
         return name;
@@ -95,5 +104,13 @@ public class MapOverlay extends AbstractEntity {
 
     public void setTilePathPattern(String tilePathPattern) {
         this.tilePathPattern = tilePathPattern;
+    }
+
+    public Set<SecurityGroup> getSecurityGroups() {
+        return securityGroups;
+    }
+
+    public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
+        this.securityGroups = securityGroups;
     }
 }

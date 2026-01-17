@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -29,14 +28,18 @@ public class JWTComponent {
     }
 
 
-    public String generateToken(String username) {
+    public String generateToken(User user) {
         HashMap<String, Object> claims = new HashMap<>();
 
-        claims.put("overlays", new ArrayList<>());
-        claims.put("is_superuser", true);
-        claims.put("view_all", true);
+        claims.put("overlays", user.getSecurityGroups().stream()
+                .flatMap(s -> s.getOverlays().stream().map(o -> o.getId().toString()))
+                .distinct()
+                .toList()
+        );
+        claims.put("is_superuser", user.getSecurityGroups().stream().anyMatch(s -> s.getName().equals("SuperAdmins")));
+        claims.put("view_all", user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MAP_OVERLAYS_ALL")));
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .addClaims(claims)
