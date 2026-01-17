@@ -12,7 +12,12 @@ import com.vaadin.flow.data.binder.Binder;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+import dev.nilswitt.webmap.records.OverlayConfig;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class MapOverlayEditDialog extends Dialog {
@@ -30,7 +35,7 @@ public class MapOverlayEditDialog extends Dialog {
     private final SecurityGroupRepository securityGroupRepository;
 
 
-    public MapOverlayEditDialog(Consumer<MapOverlay> editCallback, SecurityGroupRepository securityGroupRepository) {
+    public MapOverlayEditDialog(Consumer<MapOverlay> editCallback, SecurityGroupRepository securityGroupRepository, OverlayConfig overlayConfig) {
         this.securityGroupRepository = securityGroupRepository;
         this.editCallback = editCallback;
         this.setModality(ModalityMode.STRICT);
@@ -79,14 +84,38 @@ public class MapOverlayEditDialog extends Dialog {
         });
         saveButton.setThemeVariant(ButtonVariant.LUMO_PRIMARY, true);
 
-        Button cancelButton = new Button("Cancel", event -> {
-            close();
-        });
+        Button cancelButton = new Button("Cancel", event -> close());
+
         cancelButton.setThemeVariant(ButtonVariant.LUMO_WARNING, true);
         this.add(formLayout);
         this.getFooter().add(saveButton);
         this.getFooter().add(cancelButton);
 
+
+        Button deleteOldVersions = new Button("Delete Old File Versions", event -> {
+            if (this.mapOverlay != null) {
+                // Call method to delete old file versions
+                File baseOverlayDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString()).toFile();
+                if (baseOverlayDir.exists() && baseOverlayDir.isDirectory()) {
+                    File[] versionDirs = baseOverlayDir.listFiles(File::isDirectory);
+                    if (versionDirs != null) {
+                        for (File versionDir : versionDirs) {
+                            try {
+                                int version = Integer.parseInt(versionDir.getName());
+                                if (version < mapOverlay.getLayerVersion()) {
+                                    FileUtils.deleteDirectory(versionDir);
+                                }
+                            } catch (NumberFormatException e) {
+                                // Ignore directories that are not version numbers
+                            } catch (IOException e) {
+                                // Handle deletion error
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        this.getFooter().add(deleteOldVersions);
     }
 
     public void setError(String message) {

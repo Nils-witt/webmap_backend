@@ -39,7 +39,7 @@ public class OverlayView extends VerticalLayout {
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
             mapOverlayRepository.save(mapOverlay);
             mapOverlayGrid.getDataProvider().refreshAll();
-        },securityGroupRepository);
+        },securityGroupRepository, overlayConfig);
 
 
         createBtn = new Button("Create", event -> {
