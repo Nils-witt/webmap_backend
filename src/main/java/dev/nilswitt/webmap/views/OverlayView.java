@@ -19,7 +19,11 @@ import dev.nilswitt.webmap.records.OverlayConfig;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
 import dev.nilswitt.webmap.views.components.UploadOverlayDialog;
 import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
@@ -39,7 +43,7 @@ public class OverlayView extends VerticalLayout {
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
             mapOverlayRepository.save(mapOverlay);
             mapOverlayGrid.getDataProvider().refreshAll();
-        },securityGroupRepository, overlayConfig);
+        },securityGroupRepository);
 
 
         createBtn = new Button("Create", event -> {
@@ -85,6 +89,30 @@ public class OverlayView extends VerticalLayout {
                 });
                 this.add(confirmDialog);
                 confirmDialog.open();
+            });
+        });
+        menu.addItem("Delete old Versions" , event -> {
+            Optional<MapOverlay> item = event.getItem();
+            item.ifPresent(mapOverlay -> {
+                // Call method to delete old file versions
+                File baseOverlayDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString()).toFile();
+                if (baseOverlayDir.exists() && baseOverlayDir.isDirectory()) {
+                    File[] versionDirs = baseOverlayDir.listFiles(File::isDirectory);
+                    if (versionDirs != null) {
+                        for (File versionDir : versionDirs) {
+                            try {
+                                int version = Integer.parseInt(versionDir.getName());
+                                if (version < mapOverlay.getLayerVersion()) {
+                                    FileUtils.deleteDirectory(versionDir);
+                                }
+                            } catch (NumberFormatException e) {
+                                // Ignore directories that are not version numbers
+                            } catch (IOException e) {
+                                // Handle deletion error
+                            }
+                        }
+                    }
+                }
             });
         });
         setSizeFull();
