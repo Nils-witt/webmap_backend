@@ -64,17 +64,12 @@ public class UploadOverlayDialog extends Dialog {
 
         @Override
         public void handleUploadRequest(UploadEvent event) throws IOException {
-            String fileName = event.getFileName();
-
             try (InputStream inputStream = event.getInputStream()) {
-                File targetFile = new File("uploads/" + fileName);
-                targetFile.getParentFile().mkdirs();
-                try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
-                    inputStream.transferTo(outputStream);
-                }
+
                 int newLayerVersion = mapOverlay.getLayerVersion() + 1;
 
                 File destDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString(), String.valueOf(newLayerVersion)).toFile();
+                logger.info("Uploading overlay at {}", destDir.getAbsolutePath());
                 if (!destDir.exists()) {
                     destDir.mkdirs();
                 } else {
@@ -83,7 +78,7 @@ public class UploadOverlayDialog extends Dialog {
                 }
 
                 byte[] buffer = new byte[1024];
-                ZipInputStream zis = new ZipInputStream(new FileInputStream("uploads/" + fileName));
+                ZipInputStream zis = new ZipInputStream(inputStream);
                 ZipEntry zipEntry = zis.getNextEntry();
                 while (zipEntry != null) {
                     File newFile = newFile(destDir, zipEntry);
