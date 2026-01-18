@@ -2,17 +2,16 @@ package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 @Entity
@@ -194,5 +193,71 @@ public class User extends AbstractEntity implements UserDetails {
                 ", createdAt=" + this.getCreatedAt() +
                 ", updatedAt=" + this.getUpdatedAt() +
                 '}';
+    }
+
+
+    public boolean canView(@NotNull User user) {
+        if (this.isUserAdmin(user)) {
+            return true;
+        }
+        // IF user is global admin with Delete rights, allow
+        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_VIEW", "ROLE_GLOBAL_VIEW"}));
+
+        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public boolean canEdit(@NotNull User user) {
+        if (this.isUserAdmin(user)) {
+            return true;
+        }
+        // IF user is global admin with Delete rights, allow
+        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_EDIT", "ROLE_GLOBAL_EDIT"}));
+
+        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean canCreate(@NotNull User user) {
+        if (this.isUserAdmin(user)) {
+            return true;
+        }
+        // IF user is global admin with Delete rights, allow
+        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_CREATE", "ROLE_GLOBAL_CREATE"}));
+
+        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean canDelete(@NotNull User user) {
+        if (this.isUserAdmin(user)) {
+            return true;
+        }
+        // IF user is global admin with Delete rights, allow
+        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_DELETE", "ROLE_GLOBAL_DELETE"}));
+
+        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isUserAdmin(@Nullable User user) {
+        if (user == null) {
+            return false;
+        }
+        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_ADMIN", "ROLE_GLOBAL_ADMIN"}));
+
+        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
+            return true;
+        }
+        return false;
     }
 }

@@ -6,12 +6,16 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapItem;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
 import dev.nilswitt.webmap.views.components.MapItemEditDialog;
 import dev.nilswitt.webmap.views.filters.MapItemFilter;
@@ -20,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
+import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/map/items")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Items")
@@ -31,9 +36,11 @@ public class MapItemView extends VerticalLayout {
 
     private final MapItemRepository mapItemRepository;
     private final MapItemFilter mapItemFilter;
+    private final AuthenticationContext authenticationContext;
 
-    public MapItemView(MapItemRepository mapItemRepository) {
+    public MapItemView(MapItemRepository mapItemRepository, AuthenticationContext authenticationContext) {
         this.mapItemRepository = mapItemRepository;
+        this.authenticationContext = authenticationContext;
         this.editDialog = new MapItemEditDialog(mapItem -> {
             this.mapItemRepository.save(mapItem);
             this.mapItemGrid.getDataProvider().refreshAll();
@@ -57,7 +64,15 @@ public class MapItemView extends VerticalLayout {
 
     private void configureCreateButton() {
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        this.createBtn.addClickListener(event -> editDialog.open(null));
+        this.createBtn.addClickListener(event -> {
+            User user = currentUser();
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+                    SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                Notification.show("You cannot create map items");
+                return;
+            }
+            this.editDialog.open(null);
+        });
     }
 
     private void configureGrid() {
@@ -72,6 +87,10 @@ public class MapItemView extends VerticalLayout {
         this.mapItemGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         new MapItemContextMenu(this.mapItemGrid);
 
+    }
+
+    private User currentUser() {
+        return this.authenticationContext.getAuthenticatedUser(User.class).orElse(null);
     }
 
     private void openDeleteDialog(MapItem mapItem) {
@@ -97,8 +116,24 @@ public class MapItemView extends VerticalLayout {
     private class MapItemContextMenu extends GridContextMenu<MapItem> {
         public MapItemContextMenu(Grid<MapItem> target) {
             super(target);
-            this.addItem("Edit", event -> event.getItem().ifPresent(editDialog::open));
-            this.addItem("Delete", event -> event.getItem().ifPresent(MapItemView.this::openDeleteDialog));
+            this.addItem("Edit", event -> event.getItem().ifPresent(mapItem -> {
+                User user = currentUser();
+                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+                        SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                    Notification.show("You cannot edit map items");
+                    return;
+                }
+                editDialog.open(mapItem);
+            }));
+            this.addItem("Delete", event -> event.getItem().ifPresent(mapItem -> {
+                User user = currentUser();
+                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+                        SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    Notification.show("You cannot delete map items");
+                    return;
+                }
+                MapItemView.this.openDeleteDialog(mapItem);
+            }));
             setDynamicContentHandler(Objects::nonNull);
         }
     }

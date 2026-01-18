@@ -6,13 +6,16 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import dev.nilswitt.webmap.base.ui.MainLayout;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.views.components.SecurityGroupEditDialog;
 import dev.nilswitt.webmap.views.filters.SecurityGroupFilter;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
+import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route(value = "ui/groups", layout = MainLayout.class)
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")
@@ -33,9 +37,11 @@ public class SecurityGroupView extends VerticalLayout {
 
     private final SecurityGroupRepository securityGroupRepository;
     private final SecurityGroupFilter securityGroupFilter;
+    private final AuthenticationContext authenticationContext;
 
-    public SecurityGroupView(SecurityGroupRepository repository) {
+    public SecurityGroupView(SecurityGroupRepository repository, AuthenticationContext authenticationContext) {
         this.securityGroupRepository = repository;
+        this.authenticationContext = authenticationContext;
 
         this.securityGroupGrid = new Grid<>(SecurityGroup.class, false);
 
@@ -46,6 +52,12 @@ public class SecurityGroupView extends VerticalLayout {
 
 
         this.createBtn = new Button("Create", event -> {
+            User user = currentUser();
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+                    SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                Notification.show("You cannot create roles");
+                return;
+            }
             this.editDialog.open(null);
         });
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -73,6 +85,10 @@ public class SecurityGroupView extends VerticalLayout {
         this.add(this.editDialog);
     }
 
+    private User currentUser() {
+        return this.authenticationContext.getAuthenticatedUser(User.class).orElse(null);
+    }
+
     private List<SecurityGroup> list(Pageable pageable) {
         return this.securityGroupRepository.findAll(this.securityGroupFilter.getExample(), pageable).stream().toList();
     }
@@ -81,10 +97,24 @@ public class SecurityGroupView extends VerticalLayout {
         public SecurityGroupContextMenu(Grid<SecurityGroup> target) {
             super(target);
             this.addItem("Edit", event -> {
-                event.getItem().ifPresent(editDialog::open);
+                event.getItem().ifPresent(securityGroup -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+                            SecurityGroup.UserRoleScopeEnum.EDIT)) {
+                        Notification.show("You cannot edit roles");
+                        return;
+                    }
+                    editDialog.open(securityGroup);
+                });
             });
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(userRole -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                        Notification.show("You cannot delete roles");
+                        return;
+                    }
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader("Delete Group");
                     confirmDialog.setText("Are you sure you want to delete role '" + userRole.getName() + "'?");

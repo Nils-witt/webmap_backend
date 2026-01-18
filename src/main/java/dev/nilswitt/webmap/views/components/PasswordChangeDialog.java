@@ -75,7 +75,6 @@ public class PasswordChangeDialog extends Dialog {
                 setError("Password cannot be empty.");
                 return;
             }
-
             this.user.setPassword(passwordEncoder.encode(this.passwordField.getValue()));
             this.userRepository.save(user);
             close();

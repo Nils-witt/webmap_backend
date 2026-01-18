@@ -59,7 +59,8 @@ public class SecurityGroup extends AbstractEntity {
         USERS,
         USER_ROLES,
         UNITS,
-        MAP_ITEMS
+        MAP_ITEMS,
+        GLOBAL
     }
 
     public static List<String> availableRoles() {

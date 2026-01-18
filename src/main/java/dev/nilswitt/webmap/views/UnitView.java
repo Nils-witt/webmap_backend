@@ -6,12 +6,16 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.Unit;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UnitRepository;
 import dev.nilswitt.webmap.views.components.UnitEditDialog;
 import dev.nilswitt.webmap.views.filters.UnitFilter;
@@ -20,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
+import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/units")
 @Menu(order = 3, icon = "vaadin:road", title = "Units")
@@ -31,9 +36,11 @@ public class UnitView extends VerticalLayout {
 
     private final UnitRepository unitRepository;
     private final UnitFilter unitFilter;
+    private final AuthenticationContext authenticationContext;
 
-    public UnitView(UnitRepository unitRepository) {
+    public UnitView(UnitRepository unitRepository, AuthenticationContext authenticationContext) {
         this.unitRepository = unitRepository;
+        this.authenticationContext = authenticationContext;
         this.editDialog = new UnitEditDialog(unit -> {
             this.unitRepository.save(unit);
             this.refresh();
@@ -59,7 +66,15 @@ public class UnitView extends VerticalLayout {
 
     private void configureCreateButton() {
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        this.createBtn.addClickListener(event -> editDialog.open(null));
+        this.createBtn.addClickListener(event -> {
+            User user = currentUser();
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+                    SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                Notification.show("You cannot create units");
+                return;
+            }
+            editDialog.open(null);
+        });
     }
 
     public List<Unit> list(Pageable pageable) {
@@ -88,6 +103,10 @@ public class UnitView extends VerticalLayout {
 
     }
 
+    private User currentUser() {
+        return this.authenticationContext.getAuthenticatedUser(User.class).orElse(null);
+    }
+
     private void openDeleteDialog(Unit unit) {
         ConfirmDialog confirmDialog = new ConfirmDialog();
         confirmDialog.setHeader("Delete Unit");
@@ -107,8 +126,24 @@ public class UnitView extends VerticalLayout {
     private class UnitContextMenu extends GridContextMenu<Unit> {
         public UnitContextMenu(Grid<Unit> target) {
             super(target);
-            this.addItem("Edit", event -> event.getItem().ifPresent(editDialog::open));
-            this.addItem("Delete", event -> event.getItem().ifPresent(UnitView.this::openDeleteDialog));
+            this.addItem("Edit", event -> event.getItem().ifPresent(unit -> {
+                User user = currentUser();
+                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+                        SecurityGroup.UserRoleScopeEnum.EDIT)) {
+                    Notification.show("You cannot edit units");
+                    return;
+                }
+                editDialog.open(unit);
+            }));
+            this.addItem("Delete", event -> event.getItem().ifPresent(unit -> {
+                User user = currentUser();
+                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+                        SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    Notification.show("You cannot delete units");
+                    return;
+                }
+                UnitView.this.openDeleteDialog(unit);
+            }));
             this.setDynamicContentHandler(Objects::nonNull);
         }
     }

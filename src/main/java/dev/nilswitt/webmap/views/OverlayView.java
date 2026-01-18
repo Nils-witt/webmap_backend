@@ -6,12 +6,16 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.records.OverlayConfig;
@@ -27,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
@@ -41,10 +46,13 @@ public class OverlayView extends VerticalLayout {
     private final OverlayFilter overlayFilter;
 
     private final MapOverlayRepository mapOverlayRepository;
+    private final AuthenticationContext authenticationContext;
 
-    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig, SecurityGroupRepository securityGroupRepository) {
+    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig, SecurityGroupRepository securityGroupRepository,
+                       AuthenticationContext authenticationContext) {
         this.mapOverlayRepository = mapOverlayRepository;
         this.overlayConfig = overlayConfig;
+        this.authenticationContext = authenticationContext;
 
         this.mapOverlayGrid = new Grid<>();
 
@@ -55,6 +63,12 @@ public class OverlayView extends VerticalLayout {
 
 
         this.createBtn = new Button("Create", event -> {
+            User user = currentUser();
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_OVERLAYS,
+                    SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                Notification.show("You cannot create overlays");
+                return;
+            }
             this.editDialog.open(null);
         });
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -84,6 +98,9 @@ public class OverlayView extends VerticalLayout {
         this.add(editDialog);
     }
 
+    private User currentUser() {
+        return this.authenticationContext.getAuthenticatedUser(User.class).orElse(null);
+    }
 
     private List<MapOverlay> list(Pageable pageable) {
         return this.mapOverlayRepository.findAll(this.overlayFilter.getExample(), pageable).stream().toList();
@@ -94,16 +111,36 @@ public class OverlayView extends VerticalLayout {
             super(target);
             this.addItem("upload", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_OVERLAYS,
+                            SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                        Notification.show("You cannot upload for overlays");
+                        return;
+                    }
                     UploadOverlayDialog uploadOverlayDialog = new UploadOverlayDialog(mapOverlayRepository, mapOverlay, overlayConfig);
                     add(uploadOverlayDialog);
                     uploadOverlayDialog.open();
                 });
             });
             this.addItem("Edit", event -> {
-                event.getItem().ifPresent(editDialog::open);
+                event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_OVERLAYS,
+                            SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                        Notification.show("You cannot edit overlays");
+                        return;
+                    }
+                    editDialog.open(mapOverlay);
+                });
             });
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_OVERLAYS,
+                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                        Notification.show("You cannot delete overlays");
+                        return;
+                    }
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader("Delete Overlay");
                     confirmDialog.setText("Are you sure you want to delete overlay '" + mapOverlay.getName() + "'?");
@@ -121,6 +158,12 @@ public class OverlayView extends VerticalLayout {
             });
             this.addItem("Delete old Versions", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_OVERLAYS,
+                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                        Notification.show("You cannot delete overlay versions");
+                        return;
+                    }
                     // Call method to delete old file versions
                     File baseOverlayDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString()).toFile();
                     if (baseOverlayDir.exists() && baseOverlayDir.isDirectory()) {
@@ -142,6 +185,7 @@ public class OverlayView extends VerticalLayout {
                     }
                 });
             });
+
             this.setDynamicContentHandler(Objects::nonNull);
         }
     }
