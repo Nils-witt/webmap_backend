@@ -26,9 +26,9 @@ import java.util.Objects;
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")
 @PermitAll
 public class SecurityGroupView extends VerticalLayout {
-    private  final Grid<SecurityGroup> securityGroupGrid;
-    private  final Button createBtn;
-    private  final SecurityGroupEditDialog editDialog;
+    private final Grid<SecurityGroup> securityGroupGrid;
+    private final Button createBtn;
+    private final SecurityGroupEditDialog editDialog;
 
 
     private final SecurityGroupRepository securityGroupRepository;
@@ -37,7 +37,7 @@ public class SecurityGroupView extends VerticalLayout {
     public SecurityGroupView(SecurityGroupRepository repository) {
         this.securityGroupRepository = repository;
 
-        this.securityGroupGrid = new Grid<>(SecurityGroup.class);
+        this.securityGroupGrid = new Grid<>(SecurityGroup.class, false);
 
         this.editDialog = new SecurityGroupEditDialog((securityGroup) -> {
             this.securityGroupRepository.save(securityGroup);
