@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
@@ -17,13 +18,14 @@ import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import dev.nilswitt.webmap.views.components.PasswordChangeDialog;
 import dev.nilswitt.webmap.views.components.UserEditDialog;
+import dev.nilswitt.webmap.views.filters.UserFilter;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-
-import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
 
 @Route("ui/users")
 @Menu(order = 5, icon = "vaadin:user", title = "Users")
@@ -35,6 +37,8 @@ public class UserView extends VerticalLayout {
     final PasswordChangeDialog passwordChangeDialog;
     final UserRepository userRepository;
     final PasswordEncoder passwordEncoder;
+    UserFilter userFilter;
+
 
     public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder) {
         this.userGrid = new Grid<>();
@@ -52,15 +56,15 @@ public class UserView extends VerticalLayout {
             editDialog.open(null);
         });
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        userGrid.setItems(query -> userRepository.findAll(toSpringPageRequest(query)).stream());
-        userGrid.addColumn(User::getUsername).setHeader("Username");
-        userGrid.addColumn(User::getFirstName).setHeader("First Name");
-        userGrid.addColumn(User::getLastName).setHeader("Last Name");
-        userGrid.addColumn(User::getEmail).setHeader("Email");
-        userGrid.addColumn(User::isEnabled).setHeader("Enabled");
-        userGrid.addColumn(u -> !u.isAccountNonLocked()).setHeader("Is Locked");
+        userGrid.addColumn(User::getUsername).setKey(String.valueOf(UserFilter.Columns.USERNAME)).setHeader("Username").setSortable(true).setComparator(User::getUsername);
+        userGrid.addColumn(User::getFirstName).setKey(String.valueOf(UserFilter.Columns.FIRST_NAME)).setHeader("First Name").setSortable(true);
+        userGrid.addColumn(User::getLastName).setKey(String.valueOf(UserFilter.Columns.LAST_NAME)).setHeader("Last Name").setSortable(true);
+        userGrid.addColumn(User::getEmail).setKey(String.valueOf(UserFilter.Columns.EMAIL)).setHeader("Email").setSortable(true);
+        userGrid.addColumn(User::isEnabled).setKey(String.valueOf(UserFilter.Columns.ENABLED)).setHeader("Enabled").setSortable(true);
+        userGrid.addColumn(u -> !u.isAccountNonLocked()).setKey(String.valueOf(UserFilter.Columns.IS_LOCKED)).setHeader("Is Locked").setSortable(true);
         userGrid.addColumn(user -> String.join(", ", user.getSecurityGroups().stream().map(SecurityGroup::getName).toList()))
-                .setHeader("Groups");
+                .setHeader("Groups").setKey(String.valueOf(UserFilter.Columns.GROUPS));
+        userGrid.setItemsPageable(this::list);
 
         userGrid.setEmptyStateText("There are no users");
         userGrid.setSizeFull();
@@ -70,12 +74,20 @@ public class UserView extends VerticalLayout {
         setPadding(false);
         setSpacing(false);
         getStyle().setOverflow(Style.Overflow.HIDDEN);
-
+        userFilter = new UserFilter((userExample -> {
+            userGrid.getDataProvider().refreshAll();
+        }));
+        userFilter.setUp(userGrid);
         add(new ViewToolbar("User List", ViewToolbar.group(createBtn)));
+
         add(userGrid);
         add(editDialog);
 
-        PersonContextMenu contextMenu = new PersonContextMenu(userGrid);
+        new PersonContextMenu(userGrid);
+    }
+
+    public List<User> list(Pageable pageable) {
+        return userRepository.findAll(userFilter.getExample(), pageable).stream().toList();
     }
 
 
@@ -111,14 +123,7 @@ public class UserView extends VerticalLayout {
                 if (item.isEmpty()) return;
                 item.ifPresent(passwordChangeDialog::open);
             });
-            setDynamicContentHandler(person -> {
-                // Do not show context menu when header is clicked
-                if (person == null) {
-                    return false;
-                }
-
-                return true;
-            });
+            setDynamicContentHandler(Objects::nonNull);
         }
     }
 }

@@ -29,7 +29,7 @@ public class LogFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        logger.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
+        //logger.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
 
         filterChain.doFilter(request, response);
     }
