@@ -16,7 +16,7 @@ public class MapItemModelAssembler implements RepresentationModelAssembler<MapIt
     public EntityModel<MapItem> toModel(MapItem mapItem) {
 
         return EntityModel.of(mapItem,
-                linkTo(methodOn(MapItemController.class).one(mapItem.getId())).withSelfRel(),
-                linkTo(methodOn(MapItemController.class).all()).withRel("map/items"));
+                linkTo(methodOn(MapItemController.class).one(mapItem.getId(), null)).withSelfRel(),
+                linkTo(methodOn(MapItemController.class).all(null)).withRel("map/items"));
     }
 }

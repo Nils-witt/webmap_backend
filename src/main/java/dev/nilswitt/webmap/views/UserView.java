@@ -30,7 +30,7 @@ import java.util.Objects;
 
 @Route("ui/users")
 @Menu(order = 5, icon = "vaadin:user", title = "Users")
-@RolesAllowed("ROLE_USERS_VIEW")
+@RolesAllowed("USER_VIEW")
 public class UserView extends VerticalLayout {
     private final Grid<User> userGrid;
     private final Button createBtn;
@@ -56,7 +56,7 @@ public class UserView extends VerticalLayout {
 
         this.createBtn = new Button("Create", event -> {
             User actingUser = currentUser();
-            if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USERS,
+            if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
                     SecurityGroup.UserRoleScopeEnum.CREATE)) {
                 Notification.show("You cannot create users");
                 return;
@@ -117,7 +117,7 @@ public class UserView extends VerticalLayout {
             this.addItem("Edit", event -> {
                 event.getItem().ifPresent(user -> {
                     User actingUser = currentUser();
-                    if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USERS,
+                    if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
                             SecurityGroup.UserRoleScopeEnum.EDIT)) {
                         Notification.show("You cannot edit users");
                         return;
@@ -128,7 +128,7 @@ public class UserView extends VerticalLayout {
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(user -> {
                     User actingUser = currentUser();
-                    if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USERS,
+                    if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
                             SecurityGroup.UserRoleScopeEnum.DELETE)) {
                         Notification.show("You cannot delete users");
                         return;
@@ -151,7 +151,7 @@ public class UserView extends VerticalLayout {
 
             this.addItem("Change Password", event -> event.getItem().ifPresent(user -> {
                 User actingUser = currentUser();
-                if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USERS,
+                if (!PermissionUtil.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
                         SecurityGroup.UserRoleScopeEnum.ADMIN)) {
                     Notification.show("You cannot change passwords");
                     return;

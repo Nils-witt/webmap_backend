@@ -16,7 +16,7 @@ public class MapBaseLayerModelAssembler implements RepresentationModelAssembler<
     public EntityModel<MapBaseLayer> toModel(MapBaseLayer entity) {
 
         return EntityModel.of(entity,
-                linkTo(methodOn(MapBaseLayerController.class).one(entity.getId())).withSelfRel(),
-                linkTo(methodOn(MapBaseLayerController.class).all()).withRel("map/baselayers"));
+                linkTo(methodOn(MapBaseLayerController.class).one(entity.getId(), null)).withSelfRel(),
+                linkTo(methodOn(MapBaseLayerController.class).all(null)).withRel("map/baselayers"));
     }
 }

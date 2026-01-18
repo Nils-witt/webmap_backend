@@ -16,7 +16,7 @@ public class UnitModelAssembler implements RepresentationModelAssembler<Unit, En
     public EntityModel<Unit> toModel(Unit unit) {
 
         return EntityModel.of(unit,
-                linkTo(methodOn(UnitController.class).one(unit.getId())).withSelfRel(),
-                linkTo(methodOn(UnitController.class).all()).withRel("units"));
+                linkTo(methodOn(UnitController.class).one(unit.getId(), null)).withSelfRel(),
+                linkTo(methodOn(UnitController.class).all(null)).withRel("units"));
     }
 }

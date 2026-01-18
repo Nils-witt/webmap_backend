@@ -25,7 +25,7 @@ import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRe
 
 @Route("ui/map/baselayer")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Base Layer")
-@RolesAllowed("ROLE_MAP_BASELAYERS_VIEW")
+@RolesAllowed("MAP_BASELAYER_VIEW")
 public class MapBaseLayerView extends VerticalLayout {
     private final Grid<MapBaseLayer> mapBaseLayerGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
@@ -55,7 +55,7 @@ public class MapBaseLayerView extends VerticalLayout {
         createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         createBtn.addClickListener(event -> {
             User user = currentUser();
-            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_BASELAYERS,
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
                     SecurityGroup.UserRoleScopeEnum.CREATE)) {
                 Notification.show("You cannot create base layers");
                 return;
@@ -76,7 +76,7 @@ public class MapBaseLayerView extends VerticalLayout {
         GridContextMenu<MapBaseLayer> menu = mapBaseLayerGrid.addContextMenu();
         menu.addItem("Edit", event -> event.getItem().ifPresent(mapBaseLayer -> {
             User user = currentUser();
-            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_BASELAYERS,
+            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
                     SecurityGroup.UserRoleScopeEnum.EDIT)) {
                 Notification.show("You cannot edit base layers");
                 return;
@@ -85,7 +85,7 @@ public class MapBaseLayerView extends VerticalLayout {
         }));
         menu.addItem("Delete", event -> event.getItem().ifPresent(entity -> {
             User user = currentUser();
-            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_BASELAYERS,
+            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
                     SecurityGroup.UserRoleScopeEnum.DELETE)) {
                 Notification.show("You cannot delete base layers");
                 return;

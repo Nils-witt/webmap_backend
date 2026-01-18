@@ -36,7 +36,7 @@ public class EntityUpdateNotifier {
         String json = ow.writeValueAsString(message);
         log.info("Sending update to topic {}", topic);
 
-        registry.notifyTopic(topic,json);
+        registry.notifyTopic(topic, json);
 
     }
 

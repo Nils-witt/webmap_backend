@@ -1,11 +1,15 @@
 package dev.nilswitt.webmap.api;
 
+import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
+import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
+import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,24 +36,39 @@ public class UserController {
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping("")
-    CollectionModel<EntityModel<User>> all() {
-        List<EntityModel<User>> users = this.repository.findAll().stream()
-                .map(this.assembler::toModel)
-                .collect(Collectors.toList());
+    CollectionModel<EntityModel<User>> all(@AuthenticationPrincipal User userDetails) {
+        try {
+            ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
+                    "User does not have permission to view users.", SecurityGroup.UserRoleScopeEnum.VIEW);
 
-        return CollectionModel.of(users, linkTo(methodOn(UserController.class).all()).withSelfRel());
+            List<EntityModel<User>> users = this.repository.findAll().stream()
+                    .map(this.assembler::toModel)
+                    .collect(Collectors.toList());
+            return CollectionModel.of(users, linkTo(methodOn(UserController.class).all(null)).withSelfRel());
+
+        } catch (ForbiddenException e) {
+            // Return empty list if user does not have permission
+            return CollectionModel.of(List.of(), linkTo(methodOn(UserController.class).all(null)).withSelfRel());
+        }
+
+
     }
     // end::get-aggregate-root[]
 
     @PostMapping("")
-    EntityModel<User> newEmployee(@RequestBody User newEntity) {
+    EntityModel<User> newEmployee(@RequestBody User newEntity, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
+                "User does not have permission to create users.", SecurityGroup.UserRoleScopeEnum.CREATE);
+
         return this.assembler.toModel(this.repository.save(newEntity));
     }
 
     // Single item
 
     @GetMapping("{id}")
-    EntityModel<User> one(@PathVariable UUID id) {
+    EntityModel<User> one(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
+                "User does not have permission to view users.", SecurityGroup.UserRoleScopeEnum.VIEW);
 
         return this.assembler.toModel(
                 this.repository.findById(id)
@@ -58,7 +77,9 @@ public class UserController {
     }
 
     @PutMapping("{id}")
-    EntityModel<User> replaceEntity(@RequestBody User newEntity, @PathVariable UUID id) {
+    EntityModel<User> replaceEntity(@RequestBody User newEntity, @PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
+                "User does not have permission to edit users.", SecurityGroup.UserRoleScopeEnum.EDIT);
 
         User entity = this.repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -74,7 +95,10 @@ public class UserController {
     }
 
     @DeleteMapping("{id}")
-    void deleteEntity(@PathVariable UUID id) {
+    void deleteEntity(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
+                "User does not have permission to delete users.", SecurityGroup.UserRoleScopeEnum.DELETE);
+
         this.repository.deleteById(id);
     }
 }

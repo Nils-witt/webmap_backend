@@ -20,9 +20,9 @@ public class MapController {
     CollectionModel<EntityModel<Unit>> all() {
 
         return CollectionModel.of(new ArrayList<>(),
-                linkTo(methodOn(MapBaseLayerController.class).all()).withRel("baselayers"),
-                linkTo(methodOn(MapOverlayController.class).all()).withRel("overlays"),
-                linkTo(methodOn(MapItemController.class).all()).withRel("items")
-                );
+                linkTo(methodOn(MapBaseLayerController.class).all(null)).withRel("baselayers"),
+                linkTo(methodOn(MapOverlayController.class).all(null)).withRel("overlays"),
+                linkTo(methodOn(MapItemController.class).all(null)).withRel("items")
+        );
     }
 }

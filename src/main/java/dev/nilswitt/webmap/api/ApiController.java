@@ -22,10 +22,10 @@ public class ApiController {
     CollectionModel<EntityModel<Unit>> all() {
 
         return CollectionModel.of(new ArrayList<>(),
-                linkTo(methodOn(UserController.class).all()).withRel("users"),
-                linkTo(methodOn(UnitController.class).all()).withRel("units"),
+                linkTo(methodOn(UserController.class).all(null)).withRel("users"),
+                linkTo(methodOn(UnitController.class).all(null)).withRel("units"),
                 linkTo(methodOn(MapController.class).all()).withRel("map")
-                );
+        );
     }
     // end::get-aggregate-root[]
 

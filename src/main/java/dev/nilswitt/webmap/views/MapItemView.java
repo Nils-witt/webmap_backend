@@ -20,6 +20,7 @@ import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
 import dev.nilswitt.webmap.views.components.MapItemEditDialog;
 import dev.nilswitt.webmap.views.filters.MapItemFilter;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -28,7 +29,7 @@ import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/map/items")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Items")
-@PermitAll
+@RolesAllowed("MAPITEM_VIEW")
 public class MapItemView extends VerticalLayout {
     private final Grid<MapItem> mapItemGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
@@ -66,7 +67,7 @@ public class MapItemView extends VerticalLayout {
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         this.createBtn.addClickListener(event -> {
             User user = currentUser();
-            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM,
                     SecurityGroup.UserRoleScopeEnum.CREATE)) {
                 Notification.show("You cannot create map items");
                 return;
@@ -118,7 +119,7 @@ public class MapItemView extends VerticalLayout {
             super(target);
             this.addItem("Edit", event -> event.getItem().ifPresent(mapItem -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM,
                         SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
                     Notification.show("You cannot edit map items");
                     return;
@@ -127,7 +128,7 @@ public class MapItemView extends VerticalLayout {
             }));
             this.addItem("Delete", event -> event.getItem().ifPresent(mapItem -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAP_ITEMS,
+                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM,
                         SecurityGroup.UserRoleScopeEnum.DELETE)) {
                     Notification.show("You cannot delete map items");
                     return;

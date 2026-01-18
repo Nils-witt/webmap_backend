@@ -20,6 +20,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JWTComponent jwtHandler;
+
     public AuthController(PasswordEncoder passwordEncoder, UserRepository userRepository, JWTComponent jwtHandler) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
@@ -40,14 +41,14 @@ public class AuthController {
             }
             User user = this.jwtHandler.getUserFromToken(token);
             return Map.of("valid", true, "user", user);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new UnauthorizedException();
         }
     }
 
     @PostMapping
-    Map<String,Object> obtain(@RequestBody AuthRequest authRequest) {
+    Map<String, Object> obtain(@RequestBody AuthRequest authRequest) {
         Optional<User> userOpt = userRepository.findByUsername(authRequest.username);
         if (userOpt.isPresent()) {
             User user = userOpt.get();

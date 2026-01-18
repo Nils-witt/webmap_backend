@@ -16,7 +16,7 @@ public class MapOverlayModelAssembler implements RepresentationModelAssembler<Ma
     public EntityModel<MapOverlay> toModel(MapOverlay mapItem) {
 
         return EntityModel.of(mapItem,
-                linkTo(methodOn(MapOverlayController.class).one(mapItem.getId())).withSelfRel(),
-                linkTo(methodOn(MapOverlayController.class).all()).withRel("map/items"));
+                linkTo(methodOn(MapOverlayController.class).one(mapItem.getId(), null)).withSelfRel(),
+                linkTo(methodOn(MapOverlayController.class).all(null)).withRel("map/items"));
     }
 }

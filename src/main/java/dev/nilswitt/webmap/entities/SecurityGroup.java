@@ -54,12 +54,12 @@ public class SecurityGroup extends AbstractEntity {
     }
 
     public enum UserRoleTypeEnum {
-        MAP_OVERLAYS,
-        MAP_BASELAYERS,
-        USERS,
-        USER_ROLES,
-        UNITS,
-        MAP_ITEMS,
+        MAPOVERLAY,
+        MAPBASELAYER,
+        USER,
+        SECURITYGROUP,
+        UNIT,
+        MAPITEM,
         GLOBAL
     }
 

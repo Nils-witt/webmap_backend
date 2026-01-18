@@ -1,6 +1,7 @@
 package dev.nilswitt.webmap.api.ws;
 
-import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.entities.User;
+import dev.nilswitt.webmap.security.JWTComponent;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +18,10 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
     private final Logger log = LoggerFactory.getLogger(JWTHandshakeInterceptor.class);
 
 
-    private UserRepository userRepository;
-    JWTHandshakeInterceptor(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private final JWTComponent jwtComponent;
+
+    JWTHandshakeInterceptor(JWTComponent jwtComponent) {
+        this.jwtComponent = jwtComponent;
     }
 
     @Override
@@ -31,10 +33,10 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
                 if (jwtToken.startsWith("Bearer ")) {
                     jwtToken = jwtToken.substring(7);
                 }
+                User user = jwtComponent.getUserFromToken(jwtToken); // Validate token
 
                 attributes.put("jwtToken", jwtToken);
-                attributes.put("user", userRepository.findAll().getFirst());
-                log.info("JWT Token received: {}", jwtToken);
+                attributes.put("user", user);
                 return true;
             } else {
                 log.warn("Invalid Authorization header format");

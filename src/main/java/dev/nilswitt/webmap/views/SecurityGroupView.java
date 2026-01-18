@@ -20,6 +20,7 @@ import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.views.components.SecurityGroupEditDialog;
 import dev.nilswitt.webmap.views.filters.SecurityGroupFilter;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -28,7 +29,7 @@ import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route(value = "ui/groups", layout = MainLayout.class)
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")
-@PermitAll
+@RolesAllowed("SECURITYGROUP_VIEW")
 public class SecurityGroupView extends VerticalLayout {
     private final Grid<SecurityGroup> securityGroupGrid;
     private final Button createBtn;
@@ -53,7 +54,7 @@ public class SecurityGroupView extends VerticalLayout {
 
         this.createBtn = new Button("Create", event -> {
             User user = currentUser();
-            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP,
                     SecurityGroup.UserRoleScopeEnum.CREATE)) {
                 Notification.show("You cannot create roles");
                 return;
@@ -99,7 +100,7 @@ public class SecurityGroupView extends VerticalLayout {
             this.addItem("Edit", event -> {
                 event.getItem().ifPresent(securityGroup -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP,
                             SecurityGroup.UserRoleScopeEnum.EDIT)) {
                         Notification.show("You cannot edit roles");
                         return;
@@ -110,7 +111,7 @@ public class SecurityGroupView extends VerticalLayout {
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(userRole -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.USER_ROLES,
+                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP,
                             SecurityGroup.UserRoleScopeEnum.DELETE)) {
                         Notification.show("You cannot delete roles");
                         return;

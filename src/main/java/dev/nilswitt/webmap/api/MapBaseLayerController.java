@@ -1,10 +1,15 @@
 package dev.nilswitt.webmap.api;
 
+import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.api.exceptions.MapItemNotFoundException;
+import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.MapBaseLayerRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +27,6 @@ public class MapBaseLayerController {
     private final MapBaseLayerModelAssembler assembler;
 
 
-
     public MapBaseLayerController(MapBaseLayerRepository repository, MapBaseLayerModelAssembler assembler) {
         this.repository = repository;
         this.assembler = assembler;
@@ -31,24 +35,36 @@ public class MapBaseLayerController {
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping("")
-    CollectionModel<EntityModel<MapBaseLayer>> all() {
-        List<EntityModel<MapBaseLayer>> users = this.repository.findAll().stream()
-                .map(this.assembler::toModel)
-                .collect(Collectors.toList());
+    CollectionModel<EntityModel<MapBaseLayer>> all(@AuthenticationPrincipal User userDetails) {
+        try {
+            ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
+                    "User does not have permission to view base layers.", SecurityGroup.UserRoleScopeEnum.VIEW);
 
-        return CollectionModel.of(users, linkTo(methodOn(MapBaseLayerController.class).all()).withSelfRel());
+            List<EntityModel<MapBaseLayer>> users = this.repository.findAll().stream()
+                    .map(this.assembler::toModel)
+                    .collect(Collectors.toList());
+
+            return CollectionModel.of(users, linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
+        } catch (ForbiddenException e) {
+            return CollectionModel.of(List.of(), linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
+        }
     }
     // end::get-aggregate-root[]
 
     @PostMapping("")
-    EntityModel<MapBaseLayer> newEntity(@RequestBody MapBaseLayer newEntity) {
+    EntityModel<MapBaseLayer> newEntity(@RequestBody MapBaseLayer newEntity, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
+                "User does not have permission to create base layers.", SecurityGroup.UserRoleScopeEnum.CREATE);
+
         return this.assembler.toModel(this.repository.save(newEntity));
     }
 
     // Single item
 
     @GetMapping("{id}")
-    EntityModel<MapBaseLayer> one(@PathVariable UUID id) {
+    EntityModel<MapBaseLayer> one(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
+                "User does not have permission to view base layers.", SecurityGroup.UserRoleScopeEnum.VIEW);
 
         return this.assembler.toModel(
                 this.repository.findById(id)
@@ -57,7 +73,9 @@ public class MapBaseLayerController {
     }
 
     @PutMapping("{id}")
-    EntityModel<MapBaseLayer> replaceEntity(@RequestBody MapBaseLayer newEntity, @PathVariable UUID id) {
+    EntityModel<MapBaseLayer> replaceEntity(@RequestBody MapBaseLayer newEntity, @PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
+                "User does not have permission to edit base layers.", SecurityGroup.UserRoleScopeEnum.EDIT);
 
         MapBaseLayer entity = this.repository.findById(id)
                 .orElseThrow(() -> new MapItemNotFoundException(id));
@@ -68,7 +86,10 @@ public class MapBaseLayerController {
     }
 
     @DeleteMapping("{id}")
-    void deleteEntity(@PathVariable UUID id) {
+    void deleteEntity(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
+                "User does not have permission to delete base layers.", SecurityGroup.UserRoleScopeEnum.DELETE);
+
         this.repository.deleteById(id);
     }
 }

@@ -1,5 +1,6 @@
 package dev.nilswitt.webmap.api.ws;
 
+import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,15 @@ public class PlainWebSocketHandler extends AbstractWebSocketHandler {
         String payload = message.getPayload();
         if (payload.startsWith("SUBSCRIBE ")) {
             String topic = payload.substring(10).trim();
-            log.info("Session {} subscribed to topic {}", session.getId(), topic);
-            sessionRegistry.subscribe(session,topic);
-            // Here you would add logic to register the subscription
-            session.sendMessage(new TextMessage("Subscribed to " + topic));
+            try {
+                sessionRegistry.subscribe(session, topic);
+                // Here you would add logic to register the subscription
+                session.sendMessage(new TextMessage("Subscribed to " + topic));
+            }catch (ForbiddenException e){
+                session.sendMessage(new TextMessage("Subscription to topic " + topic + " denied: " + e.getMessage()));
+                log.warn("Session {} denied subscription to topic {}: {}", session.getId(), topic, e.getMessage());
+            }
+
             return;
         } else if (payload.equals(PING_PAYLOAD)) {
             session.sendMessage(new TextMessage(PONG_PAYLOAD));

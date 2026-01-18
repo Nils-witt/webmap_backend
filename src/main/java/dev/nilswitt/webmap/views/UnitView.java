@@ -28,7 +28,7 @@ import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/units")
 @Menu(order = 3, icon = "vaadin:road", title = "Units")
-@RolesAllowed("UNITS_VIEW")
+@RolesAllowed("UNIT_VIEW")
 public class UnitView extends VerticalLayout {
     private final Grid<Unit> unitGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
@@ -68,7 +68,7 @@ public class UnitView extends VerticalLayout {
         this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         this.createBtn.addClickListener(event -> {
             User user = currentUser();
-            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+            if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNIT,
                     SecurityGroup.UserRoleScopeEnum.CREATE)) {
                 Notification.show("You cannot create units");
                 return;
@@ -128,7 +128,7 @@ public class UnitView extends VerticalLayout {
             super(target);
             this.addItem("Edit", event -> event.getItem().ifPresent(unit -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNIT,
                         SecurityGroup.UserRoleScopeEnum.EDIT)) {
                     Notification.show("You cannot edit units");
                     return;
@@ -137,7 +137,7 @@ public class UnitView extends VerticalLayout {
             }));
             this.addItem("Delete", event -> event.getItem().ifPresent(unit -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.UNITS,
+                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.UNIT,
                         SecurityGroup.UserRoleScopeEnum.DELETE)) {
                     Notification.show("You cannot delete units");
                     return;

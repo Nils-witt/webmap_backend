@@ -1,5 +1,8 @@
 package dev.nilswitt.webmap.api.ws;
 
+import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
+import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
+import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,8 +41,32 @@ public class WebSocketSessionRegistry {
         }
     }
 
-    public void subscribe(WebSocketSession session, String topic) {
-        subscriptionSessions.computeIfAbsent(topic, k -> ConcurrentHashMap.newKeySet()).add(session.getId());
+    public void subscribe(WebSocketSession session, String topic) throws ForbiddenException {
+        if (this.checkAccess(session, topic)) {
+            subscriptionSessions.computeIfAbsent(topic, k -> ConcurrentHashMap.newKeySet()).add(session.getId());
+            logger.info("Session {} subscribed to topic {}", session.getId(), topic);
+        } else {
+            logger.warn("Session {} denied subscription to topic {}", session.getId(), topic);
+            throw new ForbiddenException("Subscription to topic " + topic + " denied.");
+        }
+    }
+
+    private boolean checkAccess(WebSocketSession session, String topic) {
+        User user = (User) session.getAttributes().get("user");
+        if (user != null) {
+            try {
+                String topicType = topic.split("/")[3].toUpperCase();
+                logger.info("Session {} checking access to topic {} => {}; {}", session.getId(), topicType,SecurityGroup.UserRoleTypeEnum.valueOf(topicType),user.getUsername());
+                ApiAuthorizationHelper.requireScope(user, SecurityGroup.UserRoleTypeEnum.valueOf(topicType), SecurityGroup.UserRoleScopeEnum.VIEW, "");
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }else {
+            logger.info("Subscription denied for unauthenticated session {}", session.getId());
+        }
+        return false;
     }
 
     public Iterable<WebSocketSession> getSessions() {
