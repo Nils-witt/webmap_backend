@@ -49,10 +49,8 @@ public abstract class EntityFilter<T extends AbstractEntity> {
         for (Grid.Column<T> column : grid.getColumns()) {
             String columnKey = column.getKey();
             if (columnKey == null) {
-                logger.warn("Column key is null for column: " + column.getId());
                 continue;
             }
-            logger.info("Column key: " + columnKey);
             Component filterComponent = getComponent(columnKey);
             filterRow.getCell(column).setComponent(filterComponent);
         }

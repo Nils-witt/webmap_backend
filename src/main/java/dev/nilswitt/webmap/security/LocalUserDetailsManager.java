@@ -28,10 +28,7 @@ public class LocalUserDetailsManager implements UserDetailsService {
         if (optionalUser.isEmpty()) {
             throw new UsernameNotFoundException(String.format("No user found with username '%s'.", username));
         }
-        User user = optionalUser.get();
 
-        log.info("Loading user {}, {}", user.getUsername(), user.getAuthorities());
-
-        return user;
+        return optionalUser.get();
     }
 }
