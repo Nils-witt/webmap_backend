@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class MainView extends VerticalLayout {
     private static final Logger log = LoggerFactory.getLogger(MainView.class);
 
-    public MainView(UserRepository userRepository, AuthenticationContext authContext) {
+    public MainView(AuthenticationContext authContext) {
 
         setSizeFull();
         setPadding(false);
