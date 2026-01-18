@@ -15,77 +15,92 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.views.components.SecurityGroupEditDialog;
+import dev.nilswitt.webmap.views.filters.SecurityGroupFilter;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.data.domain.Pageable;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Optional;
-
-import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
+import java.util.List;
+import java.util.Objects;
 
 @Route(value = "ui/groups", layout = MainLayout.class)
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")
 @PermitAll
 public class SecurityGroupView extends VerticalLayout {
-    final Grid<SecurityGroup> securityGroupGrid;
-    final Button createBtn;
-    final SecurityGroupEditDialog editDialog;
+    private  final Grid<SecurityGroup> securityGroupGrid;
+    private  final Button createBtn;
+    private  final SecurityGroupEditDialog editDialog;
+
+
+    private final SecurityGroupRepository securityGroupRepository;
+    private final SecurityGroupFilter securityGroupFilter;
 
     public SecurityGroupView(SecurityGroupRepository repository) {
-        this.securityGroupGrid = new Grid<>();
+        this.securityGroupRepository = repository;
+
+        this.securityGroupGrid = new Grid<>(SecurityGroup.class);
 
         this.editDialog = new SecurityGroupEditDialog((securityGroup) -> {
-            repository.save(securityGroup);
-            securityGroupGrid.getDataProvider().refreshAll();
+            this.securityGroupRepository.save(securityGroup);
+            this.securityGroupGrid.getDataProvider().refreshAll();
         });
 
 
-        createBtn = new Button("Create", event -> {
-            editDialog.open(null);
+        this.createBtn = new Button("Create", event -> {
+            this.editDialog.open(null);
         });
-        createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        var dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(getLocale())
-                .withZone(ZoneId.systemDefault());
-        var dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(getLocale());
+        this.securityGroupGrid.setItemsPageable(this::list);
+        this.securityGroupGrid.addColumn(SecurityGroup::getName).setKey(String.valueOf(SecurityGroupFilter.Columns.NAME)).setHeader("Name");
 
-        securityGroupGrid.setItems(query -> repository.findAll(toSpringPageRequest(query)).stream());
-        securityGroupGrid.addColumn(SecurityGroup::getName).setHeader("Name");
+        this.securityGroupGrid.setEmptyStateText("There are no roles");
+        this.securityGroupGrid.setSizeFull();
+        this.securityGroupGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-        securityGroupGrid.setEmptyStateText("There are no roles");
-        securityGroupGrid.setSizeFull();
-        securityGroupGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        GridContextMenu<SecurityGroup> menu = securityGroupGrid.addContextMenu();
-        menu.addItem("Edit", event -> {
-            Optional<SecurityGroup> item = event.getItem();
-            item.ifPresent(editDialog::open);
-        });
-        menu.addItem("Delete", event -> {
-            Optional<SecurityGroup> item = event.getItem();
-            item.ifPresent(userRole -> {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader("Delete Group");
-                confirmDialog.setText("Are you sure you want to delete role '" + userRole.getName() + "'?");
-                confirmDialog.setCancelable(true);
-                confirmDialog.setConfirmText("Delete");
-                confirmDialog.addConfirmListener(e -> {
-                    repository.delete(userRole);
-                    securityGroupGrid.getDataProvider().refreshAll();
-                    confirmDialog.close();
-                    this.remove(confirmDialog);
-                });
-                this.add(confirmDialog);
-                confirmDialog.open();
+        new SecurityGroupContextMenu(this.securityGroupGrid);
+        this.securityGroupFilter = new SecurityGroupFilter((securityGroupExample -> {
+            this.securityGroupGrid.getDataProvider().refreshAll();
+        }));
+        this.securityGroupFilter.setUp(this.securityGroupGrid);
+
+        this.setSizeFull();
+        this.setPadding(false);
+        this.setSpacing(false);
+        this.getStyle().setOverflow(Style.Overflow.HIDDEN);
+
+        this.add(new ViewToolbar("Security Groups", ViewToolbar.group(this.createBtn)));
+        this.add(this.securityGroupGrid);
+        this.add(this.editDialog);
+    }
+
+    private List<SecurityGroup> list(Pageable pageable) {
+        return this.securityGroupRepository.findAll(this.securityGroupFilter.getExample(), pageable).stream().toList();
+    }
+
+    private class SecurityGroupContextMenu extends GridContextMenu<SecurityGroup> {
+        public SecurityGroupContextMenu(Grid<SecurityGroup> target) {
+            super(target);
+            this.addItem("Edit", event -> {
+                event.getItem().ifPresent(editDialog::open);
             });
-        });
-        setSizeFull();
-        setPadding(false);
-        setSpacing(false);
-        getStyle().setOverflow(Style.Overflow.HIDDEN);
-
-        add(new ViewToolbar("Security Groups", ViewToolbar.group(createBtn)));
-        add(securityGroupGrid);
-        add(editDialog);
+            this.addItem("Delete", event -> {
+                event.getItem().ifPresent(userRole -> {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader("Delete Group");
+                    confirmDialog.setText("Are you sure you want to delete role '" + userRole.getName() + "'?");
+                    confirmDialog.setCancelable(true);
+                    confirmDialog.setConfirmText("Delete");
+                    confirmDialog.addConfirmListener(e -> {
+                        securityGroupRepository.delete(userRole);
+                        securityGroupGrid.getDataProvider().refreshAll();
+                        confirmDialog.close();
+                        this.remove(confirmDialog);
+                    });
+                    add(confirmDialog);
+                    confirmDialog.open();
+                });
+            });
+            this.setDynamicContentHandler(Objects::nonNull);
+        }
     }
 }

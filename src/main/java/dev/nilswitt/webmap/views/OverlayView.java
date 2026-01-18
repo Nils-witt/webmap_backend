@@ -10,7 +10,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
@@ -18,111 +17,132 @@ import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.records.OverlayConfig;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
 import dev.nilswitt.webmap.views.components.UploadOverlayDialog;
+import dev.nilswitt.webmap.views.filters.OverlayFilter;
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.io.FileUtils;
+import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
-
-import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
+import java.util.List;
+import java.util.Objects;
 
 @Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
 @RolesAllowed("ROLE_MAP_OVERLAYS_VIEW")
 public class OverlayView extends VerticalLayout {
-    final Grid<MapOverlay> mapOverlayGrid;
-    final Button createBtn;
-    final MapOverlayEditDialog editDialog;
+
+    private  final Grid<MapOverlay> mapOverlayGrid;
+    private final Button createBtn;
+    private  final MapOverlayEditDialog editDialog;
+
     private final OverlayConfig overlayConfig;
+    private final OverlayFilter overlayFilter;
+
+    private final MapOverlayRepository mapOverlayRepository;
 
     public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig, SecurityGroupRepository securityGroupRepository) {
+        this.mapOverlayRepository = mapOverlayRepository;
+        this.overlayConfig = overlayConfig;
+
         this.mapOverlayGrid = new Grid<>();
 
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
-            mapOverlayRepository.save(mapOverlay);
-            mapOverlayGrid.getDataProvider().refreshAll();
-        },securityGroupRepository);
+            this.mapOverlayRepository.save(mapOverlay);
+            this.mapOverlayGrid.getDataProvider().refreshAll();
+        }, securityGroupRepository);
 
 
-        createBtn = new Button("Create", event -> {
-            editDialog.open(null);
+        this.createBtn = new Button("Create", event -> {
+            this.editDialog.open(null);
         });
-        createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        mapOverlayGrid.setItems(query -> mapOverlayRepository.findAll(toSpringPageRequest(query)).stream());
-        mapOverlayGrid.addColumn(MapOverlay::getName).setHeader("Name");
-        mapOverlayGrid.addColumn(MapOverlay::getFullTileUrl).setHeader("Url");
-        mapOverlayGrid.addColumn(MapOverlay::getLayerVersion).setHeader("Layer Version");
+        this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        this.mapOverlayGrid.setItemsPageable(this::list);
+        this.mapOverlayGrid.addColumn(MapOverlay::getName).setKey(String.valueOf(OverlayFilter.Columns.NAME)).setHeader("Name");
+        this.mapOverlayGrid.addColumn(MapOverlay::getFullTileUrl).setHeader("Url");
+        this.mapOverlayGrid.addColumn(MapOverlay::getLayerVersion).setHeader("Layer Version");
 
-        mapOverlayGrid.setEmptyStateText("There are no overlays");
-        mapOverlayGrid.setSizeFull();
-        mapOverlayGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        GridContextMenu<MapOverlay> menu = mapOverlayGrid.addContextMenu();
+        this.mapOverlayGrid.setEmptyStateText("There are no overlays");
+        this.mapOverlayGrid.setSizeFull();
+        this.mapOverlayGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-        menu.addItem("upload" , event -> {
-            Optional<MapOverlay> item = event.getItem();
-            item.ifPresent(mapOverlay -> {
-                UploadOverlayDialog uploadOverlayDialog = new UploadOverlayDialog(mapOverlayRepository, mapOverlay, overlayConfig);
-                this.add(uploadOverlayDialog);
-                uploadOverlayDialog.open();
 
-            });
-        });
-        menu.addItem("Edit", event -> {
-            Optional<MapOverlay> item = event.getItem();
-            item.ifPresent(editDialog::open);
-        });
-        menu.addItem("Delete", event -> {
-            Optional<MapOverlay> item = event.getItem();
-            item.ifPresent(mapOverlay -> {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader("Delete Overlay");
-                confirmDialog.setText("Are you sure you want to delete overlay '" + mapOverlay.getName() + "'?");
-                confirmDialog.setCancelable(true);
-                confirmDialog.setConfirmText("Delete");
-                confirmDialog.addConfirmListener(e -> {
-                    mapOverlayRepository.delete(mapOverlay);
-                    mapOverlayGrid.getDataProvider().refreshAll();
-                    confirmDialog.close();
-                    this.remove(confirmDialog);
+        new SecurityGroupContextMenu(this.mapOverlayGrid);
+        this.overlayFilter = new OverlayFilter((mapOverlayExample -> {
+            this.mapOverlayGrid.getDataProvider().refreshAll();
+        }));
+        this.overlayFilter.setUp(this.mapOverlayGrid);
+
+        this.setSizeFull();
+        this.setPadding(false);
+        this.setSpacing(false);
+        this.getStyle().setOverflow(Style.Overflow.HIDDEN);
+
+        this.add(new ViewToolbar("Overlay List", ViewToolbar.group(createBtn)));
+        this.add(mapOverlayGrid);
+        this.add(editDialog);
+    }
+
+
+    private List<MapOverlay> list(Pageable pageable) {
+        return this.mapOverlayRepository.findAll(this.overlayFilter.getExample(), pageable).stream().toList();
+    }
+
+    private class SecurityGroupContextMenu extends GridContextMenu<MapOverlay> {
+        public SecurityGroupContextMenu(Grid<MapOverlay> target) {
+            super(target);
+            this.addItem("upload", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    UploadOverlayDialog uploadOverlayDialog = new UploadOverlayDialog(mapOverlayRepository, mapOverlay, overlayConfig);
+                    add(uploadOverlayDialog);
+                    uploadOverlayDialog.open();
                 });
-                this.add(confirmDialog);
-                confirmDialog.open();
             });
-        });
-        menu.addItem("Delete old Versions" , event -> {
-            Optional<MapOverlay> item = event.getItem();
-            item.ifPresent(mapOverlay -> {
-                // Call method to delete old file versions
-                File baseOverlayDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString()).toFile();
-                if (baseOverlayDir.exists() && baseOverlayDir.isDirectory()) {
-                    File[] versionDirs = baseOverlayDir.listFiles(File::isDirectory);
-                    if (versionDirs != null) {
-                        for (File versionDir : versionDirs) {
-                            try {
-                                int version = Integer.parseInt(versionDir.getName());
-                                if (version < mapOverlay.getLayerVersion()) {
-                                    FileUtils.deleteDirectory(versionDir);
+            this.addItem("Edit", event -> {
+                event.getItem().ifPresent(editDialog::open);
+            });
+            this.addItem("Delete", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader("Delete Overlay");
+                    confirmDialog.setText("Are you sure you want to delete overlay '" + mapOverlay.getName() + "'?");
+                    confirmDialog.setCancelable(true);
+                    confirmDialog.setConfirmText("Delete");
+                    confirmDialog.addConfirmListener(e -> {
+                        mapOverlayRepository.delete(mapOverlay);
+                        mapOverlayGrid.getDataProvider().refreshAll();
+                        confirmDialog.close();
+                        this.remove(confirmDialog);
+                    });
+                    add(confirmDialog);
+                    confirmDialog.open();
+                });
+            });
+            this.addItem("Delete old Versions", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    // Call method to delete old file versions
+                    File baseOverlayDir = Path.of(overlayConfig.basePath(), mapOverlay.getId().toString()).toFile();
+                    if (baseOverlayDir.exists() && baseOverlayDir.isDirectory()) {
+                        File[] versionDirs = baseOverlayDir.listFiles(File::isDirectory);
+                        if (versionDirs != null) {
+                            for (File versionDir : versionDirs) {
+                                try {
+                                    int version = Integer.parseInt(versionDir.getName());
+                                    if (version < mapOverlay.getLayerVersion()) {
+                                        FileUtils.deleteDirectory(versionDir);
+                                    }
+                                } catch (NumberFormatException e) {
+                                    // Ignore directories that are not version numbers
+                                } catch (IOException e) {
+                                    // Handle deletion error
                                 }
-                            } catch (NumberFormatException e) {
-                                // Ignore directories that are not version numbers
-                            } catch (IOException e) {
-                                // Handle deletion error
                             }
                         }
                     }
-                }
+                });
             });
-        });
-        setSizeFull();
-        setPadding(false);
-        setSpacing(false);
-        getStyle().setOverflow(Style.Overflow.HIDDEN);
-
-        add(new ViewToolbar("Overlay List", ViewToolbar.group(createBtn)));
-        add(mapOverlayGrid);
-        add(editDialog);
-        this.overlayConfig = overlayConfig;
+            this.setDynamicContentHandler(Objects::nonNull);
+        }
     }
 }
