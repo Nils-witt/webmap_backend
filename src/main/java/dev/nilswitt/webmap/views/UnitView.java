@@ -16,8 +16,11 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.entities.repositories.UnitRepository;
+import dev.nilswitt.webmap.entities.repositories.*;
+import dev.nilswitt.webmap.views.components.MapItemPermissionsDialog;
+import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import dev.nilswitt.webmap.views.components.UnitEditDialog;
+import dev.nilswitt.webmap.views.components.UnitPermissionsDialog;
 import dev.nilswitt.webmap.views.filters.UnitFilter;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
@@ -33,19 +36,26 @@ public class UnitView extends VerticalLayout {
     private final Grid<Unit> unitGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
     private final UnitEditDialog editDialog;
+    private final UnitPermissionsDialog permissionsDialog;
+
+    private final PermissionUtil permissionUtil;
 
     private final UnitRepository unitRepository;
     private final UnitFilter unitFilter;
     private final AuthenticationContext authenticationContext;
 
-    public UnitView(UnitRepository unitRepository, AuthenticationContext authenticationContext) {
+    public UnitView(UnitRepository unitRepository, AuthenticationContext authenticationContext, SecurityGroupRepository securityGroupRepository,
+                    SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
+                    UserPermissionsRepository userPermissionsRepository,
+                    UserRepository userRepository, PermissionUtil permissionUtil) {
+        this.permissionUtil = permissionUtil;
         this.unitRepository = unitRepository;
         this.authenticationContext = authenticationContext;
         this.editDialog = new UnitEditDialog(unit -> {
             this.unitRepository.save(unit);
             this.refresh();
         });
-
+        this.permissionsDialog = new UnitPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
         this.configureCreateButton();
         this.configureGrid();
         this.setSizeFull();
@@ -126,10 +136,19 @@ public class UnitView extends VerticalLayout {
     private class UnitContextMenu extends GridContextMenu<Unit> {
         public UnitContextMenu(Grid<Unit> target) {
             super(target);
+            this.addItem("Permissions", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.ADMIN, SecurityGroup.UserRoleTypeEnum.UNIT)) {
+                        Notification.show("You cannot edit overlay permissions");
+                        return;
+                    }
+                    permissionsDialog.open(mapOverlay);
+                });
+            });
             this.addItem("Edit", event -> event.getItem().ifPresent(unit -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.UNIT,
-                        SecurityGroup.UserRoleScopeEnum.EDIT)) {
+                if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleTypeEnum.UNIT)) {
                     Notification.show("You cannot edit units");
                     return;
                 }
@@ -137,8 +156,7 @@ public class UnitView extends VerticalLayout {
             }));
             this.addItem("Delete", event -> event.getItem().ifPresent(unit -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.UNIT,
-                        SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.DELETE, SecurityGroup.UserRoleTypeEnum.UNIT)) {
                     Notification.show("You cannot delete units");
                     return;
                 }

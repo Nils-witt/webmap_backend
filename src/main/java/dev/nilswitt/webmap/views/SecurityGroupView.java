@@ -39,8 +39,10 @@ public class SecurityGroupView extends VerticalLayout {
     private final SecurityGroupRepository securityGroupRepository;
     private final SecurityGroupFilter securityGroupFilter;
     private final AuthenticationContext authenticationContext;
+    private final PermissionUtil permissionUtil ;
 
-    public SecurityGroupView(SecurityGroupRepository repository, AuthenticationContext authenticationContext) {
+    public SecurityGroupView(SecurityGroupRepository repository, AuthenticationContext authenticationContext, PermissionUtil permissionUtil) {
+        this.permissionUtil = permissionUtil;
         this.securityGroupRepository = repository;
         this.authenticationContext = authenticationContext;
 
@@ -100,8 +102,7 @@ public class SecurityGroupView extends VerticalLayout {
             this.addItem("Edit", event -> {
                 event.getItem().ifPresent(securityGroup -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP,
-                            SecurityGroup.UserRoleScopeEnum.EDIT)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP)) {
                         Notification.show("You cannot edit roles");
                         return;
                     }
@@ -111,8 +112,7 @@ public class SecurityGroupView extends VerticalLayout {
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(userRole -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP,
-                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.DELETE, SecurityGroup.UserRoleTypeEnum.SECURITYGROUP)) {
                         Notification.show("You cannot delete roles");
                         return;
                     }

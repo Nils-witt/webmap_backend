@@ -16,10 +16,11 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.entities.repositories.MapOverlayRepository;
-import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+import dev.nilswitt.webmap.entities.repositories.*;
 import dev.nilswitt.webmap.records.OverlayConfig;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import dev.nilswitt.webmap.views.components.MapOverlayEditDialog;
+import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import dev.nilswitt.webmap.views.components.UploadOverlayDialog;
 import dev.nilswitt.webmap.views.filters.OverlayFilter;
 import jakarta.annotation.security.RolesAllowed;
@@ -31,28 +32,38 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/map/overlays")
 @Menu(order = 2, icon = "vaadin:clipboard-check", title = "Overlays")
 @RolesAllowed("MAPOVERLAY_VIEW")
 public class OverlayView extends VerticalLayout {
 
-    private  final Grid<MapOverlay> mapOverlayGrid;
+    private final Grid<MapOverlay> mapOverlayGrid;
     private final Button createBtn;
-    private  final MapOverlayEditDialog editDialog;
+    private final MapOverlayEditDialog editDialog;
+    private final OverlayPermissionsDialog permissionsDialog;
 
     private final OverlayConfig overlayConfig;
     private final OverlayFilter overlayFilter;
 
     private final MapOverlayRepository mapOverlayRepository;
     private final AuthenticationContext authenticationContext;
+    private final UserRepository userRepository;
+    private final PermissionUtil permissionUtil;
 
-    public OverlayView(MapOverlayRepository mapOverlayRepository, OverlayConfig overlayConfig, SecurityGroupRepository securityGroupRepository,
-                       AuthenticationContext authenticationContext) {
+    public OverlayView(
+            MapOverlayRepository mapOverlayRepository,
+            OverlayConfig overlayConfig,
+            SecurityGroupRepository securityGroupRepository,
+            SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
+            AuthenticationContext authenticationContext,
+            UserPermissionsRepository userPermissionsRepository,
+            UserRepository userRepository, PermissionUtil permissionUtil) {
+        this.permissionUtil = permissionUtil;
         this.mapOverlayRepository = mapOverlayRepository;
         this.overlayConfig = overlayConfig;
         this.authenticationContext = authenticationContext;
+        this.userRepository = userRepository;
 
         this.mapOverlayGrid = new Grid<>();
 
@@ -61,6 +72,7 @@ public class OverlayView extends VerticalLayout {
             this.mapOverlayGrid.getDataProvider().refreshAll();
         }, securityGroupRepository);
 
+        this.permissionsDialog = new OverlayPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
 
         this.createBtn = new Button("Create", event -> {
             User user = currentUser();
@@ -112,8 +124,7 @@ public class OverlayView extends VerticalLayout {
             this.addItem("upload", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY,
-                            SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
                         Notification.show("You cannot upload for overlays");
                         return;
                     }
@@ -122,11 +133,20 @@ public class OverlayView extends VerticalLayout {
                     uploadOverlayDialog.open();
                 });
             });
+            this.addItem("Permissions", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.ADMIN, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
+                        Notification.show("You cannot edit overlay permissions");
+                        return;
+                    }
+                    permissionsDialog.open(mapOverlay);
+                });
+            });
             this.addItem("Edit", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY,
-                            SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.CREATE, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
                         Notification.show("You cannot edit overlays");
                         return;
                     }
@@ -136,8 +156,7 @@ public class OverlayView extends VerticalLayout {
             this.addItem("Delete", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY,
-                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.ADMIN, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
                         Notification.show("You cannot delete overlays");
                         return;
                     }
@@ -159,8 +178,7 @@ public class OverlayView extends VerticalLayout {
             this.addItem("Delete old Versions", event -> {
                 event.getItem().ifPresent(mapOverlay -> {
                     User user = currentUser();
-                    if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY,
-                            SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.DELETE, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
                         Notification.show("You cannot delete overlay versions");
                         return;
                     }

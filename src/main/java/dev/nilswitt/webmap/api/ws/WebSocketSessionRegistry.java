@@ -1,9 +1,9 @@
 package dev.nilswitt.webmap.api.ws;
 
 import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
-import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -19,8 +19,12 @@ public class WebSocketSessionRegistry {
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> userSessions = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> subscriptionSessions = new ConcurrentHashMap<>();
-
+    private final PermissionUtil permissionUtil;
     private Logger logger = LogManager.getLogger(WebSocketSessionRegistry.class);
+
+    public WebSocketSessionRegistry(PermissionUtil permissionUtil) {
+        this.permissionUtil = permissionUtil;
+    }
 
     public void add(WebSocketSession session) {
         sessions.put(session.getId(), session);
@@ -56,14 +60,12 @@ public class WebSocketSessionRegistry {
         if (user != null) {
             try {
                 String topicType = topic.split("/")[3].toUpperCase();
-                logger.info("Session {} checking access to topic {} => {}; {}", session.getId(), topicType,SecurityGroup.UserRoleTypeEnum.valueOf(topicType),user.getUsername());
-                ApiAuthorizationHelper.requireScope(user, SecurityGroup.UserRoleTypeEnum.valueOf(topicType), SecurityGroup.UserRoleScopeEnum.VIEW, "");
-                return true;
+                logger.info("Session {} checking access to topic {} => {}; {}", session.getId(), topicType, SecurityGroup.UserRoleTypeEnum.valueOf(topicType), user.getUsername());
+                return permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.VIEW, SecurityGroup.UserRoleTypeEnum.valueOf(topicType));
             } catch (Exception e) {
-                e.printStackTrace();
                 return false;
             }
-        }else {
+        } else {
             logger.info("Subscription denied for unauthenticated session {}", session.getId());
         }
         return false;

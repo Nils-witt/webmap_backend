@@ -16,8 +16,10 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapItem;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.entities.repositories.MapItemRepository;
+import dev.nilswitt.webmap.entities.repositories.*;
 import dev.nilswitt.webmap.views.components.MapItemEditDialog;
+import dev.nilswitt.webmap.views.components.MapItemPermissionsDialog;
+import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import dev.nilswitt.webmap.views.filters.MapItemFilter;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -34,19 +36,24 @@ public class MapItemView extends VerticalLayout {
     private final Grid<MapItem> mapItemGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
     private final MapItemEditDialog editDialog;
+    private final MapItemPermissionsDialog permissionsDialog;
 
     private final MapItemRepository mapItemRepository;
     private final MapItemFilter mapItemFilter;
     private final AuthenticationContext authenticationContext;
-
-    public MapItemView(MapItemRepository mapItemRepository, AuthenticationContext authenticationContext) {
+    private final PermissionUtil permissionUtil;
+    public MapItemView(MapItemRepository mapItemRepository, AuthenticationContext authenticationContext, SecurityGroupRepository securityGroupRepository,
+                       SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
+                       UserPermissionsRepository userPermissionsRepository,
+                       UserRepository userRepository, PermissionUtil permissionUtil) {
+        this.permissionUtil = permissionUtil;
         this.mapItemRepository = mapItemRepository;
         this.authenticationContext = authenticationContext;
         this.editDialog = new MapItemEditDialog(mapItem -> {
             this.mapItemRepository.save(mapItem);
             this.mapItemGrid.getDataProvider().refreshAll();
         });
-
+        this.permissionsDialog = new MapItemPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
         this.configureCreateButton();
         this.configureGrid();
         this.mapItemFilter = new MapItemFilter(securityGroupExample -> {
@@ -117,10 +124,19 @@ public class MapItemView extends VerticalLayout {
     private class MapItemContextMenu extends GridContextMenu<MapItem> {
         public MapItemContextMenu(Grid<MapItem> target) {
             super(target);
+            this.addItem("Permissions", event -> {
+                event.getItem().ifPresent(mapOverlay -> {
+                    User user = currentUser();
+                    if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.ADMIN, SecurityGroup.UserRoleTypeEnum.MAPITEM)) {
+                        Notification.show("You cannot edit overlay permissions");
+                        return;
+                    }
+                    permissionsDialog.open(mapOverlay);
+                });
+            });
             this.addItem("Edit", event -> event.getItem().ifPresent(mapItem -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM,
-                        SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                if (!PermissionUtil.hasAnyScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleScopeEnum.CREATE)) {
                     Notification.show("You cannot edit map items");
                     return;
                 }
@@ -128,8 +144,7 @@ public class MapItemView extends VerticalLayout {
             }));
             this.addItem("Delete", event -> event.getItem().ifPresent(mapItem -> {
                 User user = currentUser();
-                if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPITEM,
-                        SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.DELETE, SecurityGroup.UserRoleTypeEnum.MAPITEM)) {
                     Notification.show("You cannot delete map items");
                     return;
                 }

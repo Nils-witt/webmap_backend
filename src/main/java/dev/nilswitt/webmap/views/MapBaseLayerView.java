@@ -16,9 +16,11 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.entities.repositories.MapBaseLayerRepository;
+import dev.nilswitt.webmap.entities.repositories.*;
 import dev.nilswitt.webmap.security.PermissionUtil;
 import dev.nilswitt.webmap.views.components.MapBaseLayerEditDialog;
+import dev.nilswitt.webmap.views.components.MapBaseLayerPermissionsDialog;
+import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import jakarta.annotation.security.RolesAllowed;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;
@@ -31,14 +33,20 @@ public class MapBaseLayerView extends VerticalLayout {
     private final Button createBtn = new Button("Create");
     private final MapBaseLayerEditDialog editDialog;
     private final AuthenticationContext authenticationContext;
+    private final MapBaseLayerPermissionsDialog permissionsDialog;
+    private final PermissionUtil permissionUtil;
 
-    public MapBaseLayerView(MapBaseLayerRepository mapBaseLayerRepository, AuthenticationContext authenticationContext) {
+    public MapBaseLayerView(MapBaseLayerRepository mapBaseLayerRepository, AuthenticationContext authenticationContext, SecurityGroupRepository securityGroupRepository,
+                            SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
+                            UserPermissionsRepository userPermissionsRepository,
+                            UserRepository userRepository, PermissionUtil permissionUtil) {
         this.authenticationContext = authenticationContext;
+        this.permissionUtil = permissionUtil;
         editDialog = new MapBaseLayerEditDialog(mapItem -> {
             mapBaseLayerRepository.save(mapItem);
             mapBaseLayerGrid.getDataProvider().refreshAll();
         });
-
+        this.permissionsDialog = new MapBaseLayerPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
         configureCreateButton();
         configureGrid(mapBaseLayerRepository);
 
@@ -74,10 +82,19 @@ public class MapBaseLayerView extends VerticalLayout {
         mapBaseLayerGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         GridContextMenu<MapBaseLayer> menu = mapBaseLayerGrid.addContextMenu();
+        menu.addItem("Permissions", event -> {
+            event.getItem().ifPresent(mapOverlay -> {
+                User user = currentUser();
+                if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.ADMIN, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER)) {
+                    Notification.show("You cannot edit overlay permissions");
+                    return;
+                }
+                permissionsDialog.open(mapOverlay);
+            });
+        });
         menu.addItem("Edit", event -> event.getItem().ifPresent(mapBaseLayer -> {
             User user = currentUser();
-            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                    SecurityGroup.UserRoleScopeEnum.EDIT)) {
+            if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER)) {
                 Notification.show("You cannot edit base layers");
                 return;
             }
@@ -85,8 +102,7 @@ public class MapBaseLayerView extends VerticalLayout {
         }));
         menu.addItem("Delete", event -> event.getItem().ifPresent(entity -> {
             User user = currentUser();
-            if (!PermissionUtil.hasScope(user, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                    SecurityGroup.UserRoleScopeEnum.DELETE)) {
+            if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.DELETE, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER)) {
                 Notification.show("You cannot delete base layers");
                 return;
             }

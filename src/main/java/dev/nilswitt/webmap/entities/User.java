@@ -22,7 +22,6 @@ import java.util.*;
         @UniqueConstraint(columnNames = {"username"}),
         @UniqueConstraint(columnNames = {"email"})
 })
-@EntityListeners(EntityEventListener.class)
 public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
@@ -63,6 +62,17 @@ public class User extends AbstractEntity implements UserDetails {
 
     @Column
     private boolean isLocked = false;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private Set<UserPermission> userPermissions = new LinkedHashSet<>();
+
+    public Set<UserPermission> getUserPermissions() {
+        return userPermissions;
+    }
+
+    public void setUserPermissions(Set<UserPermission> userPermissions) {
+        this.userPermissions = userPermissions;
+    }
 
     public User() {
     }

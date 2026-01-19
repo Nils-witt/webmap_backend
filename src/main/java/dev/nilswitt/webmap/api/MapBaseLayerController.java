@@ -1,12 +1,12 @@
 package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
-import dev.nilswitt.webmap.api.exceptions.MapItemNotFoundException;
-import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
+import dev.nilswitt.webmap.api.exceptions.MapBaseLayerNotFoundException;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.MapBaseLayerRepository;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,37 +25,37 @@ public class MapBaseLayerController {
 
     private final MapBaseLayerRepository repository;
     private final MapBaseLayerModelAssembler assembler;
+    private final PermissionUtil permissionUtil;
 
 
-    public MapBaseLayerController(MapBaseLayerRepository repository, MapBaseLayerModelAssembler assembler) {
+
+    public MapBaseLayerController(MapBaseLayerRepository repository, MapBaseLayerModelAssembler assembler, PermissionUtil permissionUtil) {
         this.repository = repository;
         this.assembler = assembler;
+        this.permissionUtil = permissionUtil;
     }
 
     // Aggregate root
     // tag::get-aggregate-root[]
     @GetMapping("")
     CollectionModel<EntityModel<MapBaseLayer>> all(@AuthenticationPrincipal User userDetails) {
-        try {
-            ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                    "User does not have permission to view base layers.", SecurityGroup.UserRoleScopeEnum.VIEW);
+        if (this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.VIEW, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
 
-            List<EntityModel<MapBaseLayer>> users = this.repository.findAll().stream()
+            List<EntityModel<MapBaseLayer>> entities = this.repository.findAll().stream()
                     .map(this.assembler::toModel)
                     .collect(Collectors.toList());
-
-            return CollectionModel.of(users, linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
-        } catch (ForbiddenException e) {
-            return CollectionModel.of(List.of(), linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
+            return CollectionModel.of(entities, linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
         }
+
+        return CollectionModel.of(this.permissionUtil.getMapBaseLayersForUser(userDetails).stream().map(this.assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(MapBaseLayerController.class).all(null)).withSelfRel());
     }
     // end::get-aggregate-root[]
 
     @PostMapping("")
     EntityModel<MapBaseLayer> newEntity(@RequestBody MapBaseLayer newEntity, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                "User does not have permission to create base layers.", SecurityGroup.UserRoleScopeEnum.CREATE);
-
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.CREATE, SecurityGroup.UserRoleTypeEnum.MAPOVERLAY)) {
+            throw new ForbiddenException("User does not have permission to create overlays.");
+        }
         return this.assembler.toModel(this.repository.save(newEntity));
     }
 
@@ -63,22 +63,20 @@ public class MapBaseLayerController {
 
     @GetMapping("{id}")
     EntityModel<MapBaseLayer> one(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                "User does not have permission to view base layers.", SecurityGroup.UserRoleScopeEnum.VIEW);
-
-        return this.assembler.toModel(
-                this.repository.findById(id)
-                        .orElseThrow(() -> new MapItemNotFoundException(id))
-        );
+        MapBaseLayer entity = this.repository.findById(id).orElseThrow(() -> new MapBaseLayerNotFoundException(id));
+        if (this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.VIEW, entity)) {
+            throw new ForbiddenException("User does not have permission to view overlays.");
+        }
+        return this.assembler.toModel(entity);
     }
 
     @PutMapping("{id}")
     EntityModel<MapBaseLayer> replaceEntity(@RequestBody MapBaseLayer newEntity, @PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                "User does not have permission to edit base layers.", SecurityGroup.UserRoleScopeEnum.EDIT);
+        MapBaseLayer entity = this.repository.findById(id).orElseThrow(() -> new MapBaseLayerNotFoundException(id));
 
-        MapBaseLayer entity = this.repository.findById(id)
-                .orElseThrow(() -> new MapItemNotFoundException(id));
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.EDIT, entity)) {
+            throw new ForbiddenException("User does not have permission to edit overlays.");
+        }
 
         entity.setName(newEntity.getName());
 
@@ -87,9 +85,11 @@ public class MapBaseLayerController {
 
     @DeleteMapping("{id}")
     void deleteEntity(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.MAPBASELAYER,
-                "User does not have permission to delete base layers.", SecurityGroup.UserRoleScopeEnum.DELETE);
+        MapBaseLayer entity = this.repository.findById(id).orElseThrow(() -> new MapBaseLayerNotFoundException(id));
 
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.DELETE, entity)) {
+            throw new ForbiddenException("User does not have permission to delete overlays.");
+        }
         this.repository.deleteById(id);
     }
 }

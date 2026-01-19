@@ -27,7 +27,7 @@ public class OverlayFilter extends EntityFilter<MapOverlay> {
     ExampleMatcher buildMatcher() {
         return ExampleMatcher.matchingAll()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withIgnorePaths( "id");
+                .withIgnorePaths( "id", "basePath","baseUrl", "layerVersion","tilePathPattern");
     }
 
     @Override

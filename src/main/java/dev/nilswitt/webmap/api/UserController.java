@@ -2,10 +2,12 @@ package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
-import dev.nilswitt.webmap.api.helpers.ApiAuthorizationHelper;
+import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
+import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -25,41 +27,33 @@ public class UserController {
 
     private final UserRepository repository;
     private final UserModelAssembler assembler;
-    private final ApplicationEventPublisher eventPublisher;
+    private final PermissionUtil permissionUtil;
 
-    public UserController(UserRepository repository, UserModelAssembler assembler, ApplicationEventPublisher eventPublisher) {
+    public UserController(UserRepository repository, UserModelAssembler assembler, PermissionUtil permissionUtil) {
         this.repository = repository;
         this.assembler = assembler;
-        this.eventPublisher = eventPublisher;
+        this.permissionUtil = permissionUtil;
     }
 
-    // Aggregate root
-    // tag::get-aggregate-root[]
     @GetMapping("")
     CollectionModel<EntityModel<User>> all(@AuthenticationPrincipal User userDetails) {
-        try {
-            ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
-                    "User does not have permission to view users.", SecurityGroup.UserRoleScopeEnum.VIEW);
+        if (this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.VIEW, SecurityGroup.UserRoleTypeEnum.USER)) {
 
-            List<EntityModel<User>> users = this.repository.findAll().stream()
+            List<EntityModel<User>> entities = this.repository.findAll().stream()
                     .map(this.assembler::toModel)
                     .collect(Collectors.toList());
-            return CollectionModel.of(users, linkTo(methodOn(UserController.class).all(null)).withSelfRel());
-
-        } catch (ForbiddenException e) {
-            // Return empty list if user does not have permission
-            return CollectionModel.of(List.of(), linkTo(methodOn(UserController.class).all(null)).withSelfRel());
+            return CollectionModel.of(entities, linkTo(methodOn(UserController.class).all(null)).withSelfRel());
         }
 
+        return CollectionModel.of(this.permissionUtil.getUsersForUser(userDetails).stream().map(this.assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(UserController.class).all(null)).withSelfRel());
 
     }
-    // end::get-aggregate-root[]
 
     @PostMapping("")
     EntityModel<User> newEmployee(@RequestBody User newEntity, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
-                "User does not have permission to create users.", SecurityGroup.UserRoleScopeEnum.CREATE);
-
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.CREATE, SecurityGroup.UserRoleTypeEnum.USER)) {
+            throw new ForbiddenException("User does not have permission to create overlays.");
+        }
         return this.assembler.toModel(this.repository.save(newEntity));
     }
 
@@ -67,22 +61,20 @@ public class UserController {
 
     @GetMapping("{id}")
     EntityModel<User> one(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
-                "User does not have permission to view users.", SecurityGroup.UserRoleScopeEnum.VIEW);
-
-        return this.assembler.toModel(
-                this.repository.findById(id)
-                        .orElseThrow(() -> new UserNotFoundException(id))
-        );
+        User entity = this.repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        if (this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.VIEW, entity)) {
+            throw new ForbiddenException("User does not have permission to view overlays.");
+        }
+        return this.assembler.toModel(entity        );
     }
 
     @PutMapping("{id}")
     EntityModel<User> replaceEntity(@RequestBody User newEntity, @PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
-                "User does not have permission to edit users.", SecurityGroup.UserRoleScopeEnum.EDIT);
+        User entity = this.repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        User entity = this.repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.EDIT, entity)) {
+            throw new ForbiddenException("User does not have permission to edit overlays.");
+        }
 
         entity.setUsername(newEntity.getUsername());
         entity.setEmail(newEntity.getEmail());
@@ -96,9 +88,11 @@ public class UserController {
 
     @DeleteMapping("{id}")
     void deleteEntity(@PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
-        ApiAuthorizationHelper.requireAnyScope(userDetails, SecurityGroup.UserRoleTypeEnum.USER,
-                "User does not have permission to delete users.", SecurityGroup.UserRoleScopeEnum.DELETE);
+        User entity = this.repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.DELETE, entity)) {
+            throw new ForbiddenException("User does not have permission to delete overlays.");
+        }
         this.repository.deleteById(id);
     }
 }
