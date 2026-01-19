@@ -27,7 +27,7 @@ import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRe
 
 @Route("ui/map/baselayer")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Base Layer")
-@RolesAllowed("MAP_BASELAYER_VIEW")
+@RolesAllowed("MAPBASELAYER_VIEW")
 public class MapBaseLayerView extends VerticalLayout {
     private final Grid<MapBaseLayer> mapBaseLayerGrid = new Grid<>();
     private final Button createBtn = new Button("Create");

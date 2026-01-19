@@ -29,15 +29,21 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
         if (request.getHeaders().containsHeader("Authorization")) {
             String authHeader = request.getHeaders().getFirst("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String jwtToken = authHeader;
-                if (jwtToken.startsWith("Bearer ")) {
-                    jwtToken = jwtToken.substring(7);
-                }
-                User user = jwtComponent.getUserFromToken(jwtToken); // Validate token
+                try {
+                    String jwtToken = authHeader;
+                    if (jwtToken.startsWith("Bearer ")) {
+                        jwtToken = jwtToken.substring(7);
+                    }
+                    User user = jwtComponent.getUserFromToken(jwtToken); // Validate token
 
-                attributes.put("jwtToken", jwtToken);
-                attributes.put("user", user);
-                return true;
+                    attributes.put("jwtToken", jwtToken);
+                    attributes.put("user", user);
+                    return true;
+                } catch (Exception e) {
+                    log.warn("JWT validation failed: {}", e.getMessage());
+                    return false;
+                }
+
             } else {
                 log.warn("Invalid Authorization header format");
                 return false;
