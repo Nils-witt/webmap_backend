@@ -4,9 +4,13 @@ import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @EntityListeners(EntityEventListener.class)
+@Getter
+@Setter
 public class Unit extends AbstractEntity {
 
     @NotBlank
@@ -24,40 +28,11 @@ public class Unit extends AbstractEntity {
     @Column(nullable = false)
     private boolean speakRequest = false;
 
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public EmbeddedPosition getPosition() {
         if (position == null) {
             position = new EmbeddedPosition();
         }
         return position;
-    }
-
-    public void setPosition(EmbeddedPosition position) {
-        this.position = position;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public boolean isSpeakRequest() {
-        return speakRequest;
-    }
-
-    public void setSpeakRequest(boolean speakRequest) {
-        this.speakRequest = speakRequest;
     }
 
 }

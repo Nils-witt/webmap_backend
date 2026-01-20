@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 
 @Component
 public class JWTComponent {
@@ -37,7 +38,7 @@ public class JWTComponent {
                 .toList()
         );
         claims.put("is_superuser", user.getSecurityGroups().stream().anyMatch(s -> s.getName().equals("SuperAdmins")));
-        claims.put("view_all", user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MAP_OVERLAYS_ALL")));
+        claims.put("view_all", user.getAuthorities().stream().anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_MAP_OVERLAY_VIEW")));
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date())

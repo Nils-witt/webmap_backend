@@ -6,13 +6,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class SecurityGroup extends AbstractEntity {
 
     @NotBlank
@@ -26,14 +33,10 @@ public class SecurityGroup extends AbstractEntity {
 
     @ManyToMany(mappedBy = "securityGroups")
     @JsonIgnore
-    private Set<MapOverlay> overlays;
+    private Set<MapOverlay> overlays = new HashSet<>();
 
     @Column
-    private Set<String> roles;
-
-
-    public SecurityGroup() {
-    }
+    private Set<String> roles= new HashSet<>();
 
     public SecurityGroup(String name) {
         this.name = name;
@@ -78,37 +81,5 @@ public class SecurityGroup extends AbstractEntity {
         return this.roles.stream()
                 .map(a -> new SimpleGrantedAuthority("ROLE_" + a))
                 .toList();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
-
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
-
-    public Set<MapOverlay> getOverlays() {
-        return overlays;
-    }
-
-    public void setOverlays(Set<MapOverlay> overlays) {
-        this.overlays = overlays;
     }
 }

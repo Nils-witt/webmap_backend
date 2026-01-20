@@ -49,6 +49,8 @@ class LoadDatabase {
                 if (adminUserRecord.force().equalsIgnoreCase("true")) {
                     User adminUser = adminUserOpt.get();
                     adminUser.setPassword(passwordEncoder.encode(adminUserRecord.password()));
+                    adminUser.setLocked(false);
+                    adminUser.setEnabled(true);
                     adminUser.addSecurityGroup(adminGroup);
                     repository.save(adminUser);
                 }

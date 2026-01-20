@@ -4,7 +4,7 @@
     <!-- Project from https://start.vaadin.com/98a680f8-ecd2-4f0c-b80a-085516c16a59 -->
     <groupId>dev.nilswitt.webmap</groupId>
     <artifactId>backend</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>-.-.-Artifact</version>
     <packaging>jar</packaging>
 
     <properties>

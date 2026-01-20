@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -22,6 +23,7 @@ import java.util.*;
         @UniqueConstraint(columnNames = {"username"}),
         @UniqueConstraint(columnNames = {"email"})
 })
+@Getter
 public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
@@ -66,10 +68,6 @@ public class User extends AbstractEntity implements UserDetails {
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     private Set<UserPermission> userPermissions = new LinkedHashSet<>();
 
-    public Set<UserPermission> getUserPermissions() {
-        return userPermissions;
-    }
-
     public void setUserPermissions(Set<UserPermission> userPermissions) {
         this.userPermissions = userPermissions;
     }
@@ -92,10 +90,6 @@ public class User extends AbstractEntity implements UserDetails {
         this.email = email;
     }
 
-
-    public String getUsername() {
-        return username;
-    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -121,9 +115,6 @@ public class User extends AbstractEntity implements UserDetails {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
-    }
 
     public void setEmail(String email) {
         this.email = email;
@@ -134,33 +125,21 @@ public class User extends AbstractEntity implements UserDetails {
         return this.securityGroups.stream().flatMap(securityGroup -> securityGroup.getGrantedAuthorities().stream()).toList();
     }
 
-    public String getPassword() {
-        return password;
-    }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
-    public Set<SecurityGroup> getSecurityGroups() {
-        return securityGroups;
-    }
 
     public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
         this.securityGroups = securityGroups;
@@ -203,71 +182,5 @@ public class User extends AbstractEntity implements UserDetails {
                 ", createdAt=" + this.getCreatedAt() +
                 ", updatedAt=" + this.getUpdatedAt() +
                 '}';
-    }
-
-
-    public boolean canView(@NotNull User user) {
-        if (this.isUserAdmin(user)) {
-            return true;
-        }
-        // IF user is global admin with Delete rights, allow
-        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_VIEW", "ROLE_GLOBAL_VIEW"}));
-
-        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
-            return true;
-        }
-        return false;
-    }
-
-
-    public boolean canEdit(@NotNull User user) {
-        if (this.isUserAdmin(user)) {
-            return true;
-        }
-        // IF user is global admin with Delete rights, allow
-        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_EDIT", "ROLE_GLOBAL_EDIT"}));
-
-        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean canCreate(@NotNull User user) {
-        if (this.isUserAdmin(user)) {
-            return true;
-        }
-        // IF user is global admin with Delete rights, allow
-        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_CREATE", "ROLE_GLOBAL_CREATE"}));
-
-        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean canDelete(@NotNull User user) {
-        if (this.isUserAdmin(user)) {
-            return true;
-        }
-        // IF user is global admin with Delete rights, allow
-        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_DELETE", "ROLE_GLOBAL_DELETE"}));
-
-        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isUserAdmin(@Nullable User user) {
-        if (user == null) {
-            return false;
-        }
-        ArrayList<String> oneOfRoles = new ArrayList<>(List.of(new String[]{"ROLE_USERS_ADMIN", "ROLE_GLOBAL_ADMIN"}));
-
-        if (user.getAuthorities().stream().anyMatch(a -> oneOfRoles.contains(a.getAuthority()))) {
-            return true;
-        }
-        return false;
     }
 }

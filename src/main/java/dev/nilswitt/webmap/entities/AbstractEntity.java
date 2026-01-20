@@ -1,12 +1,14 @@
 package dev.nilswitt.webmap.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
 
 @MappedSuperclass
+@Getter
 public abstract class AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -29,19 +31,6 @@ public abstract class AbstractEntity {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
-    }
-
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
     }
 
 

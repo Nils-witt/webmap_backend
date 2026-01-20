@@ -7,9 +7,13 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @EntityListeners(EntityEventListener.class)
+@Getter
+@Setter
 public class MapBaseLayer extends AbstractEntity {
 
     @NotBlank
@@ -20,20 +24,4 @@ public class MapBaseLayer extends AbstractEntity {
     @Column(nullable = false, unique = false, length = 100)
     private String url;
 
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
 }

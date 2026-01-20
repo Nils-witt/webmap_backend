@@ -21,20 +21,20 @@ public class EntityEventListener {
 
     @PostPersist
     public void onPostPersist(AbstractEntity entity) {
-        logger.info("A new {} entity has been persisted: {}", entity.getClass().getSimpleName(), entity);
+        logger.debug("A new {} entity has been persisted: {}", entity.getClass().getSimpleName(), entity);
         applicationEventPublisher.publishEvent(new EntityChangedEvent<>(entity.getClass().getSimpleName(), entity, ChangeType.CREATED, entity.getId()));
     }
 
     @PostUpdate
     public void onPostUpdate(AbstractEntity entity) {
-        logger.info("An existing {} entity has been updated: {}", entity.getClass().getSimpleName(), entity);
+        logger.debug("An existing {} entity has been updated: {}", entity.getClass().getSimpleName(), entity);
         applicationEventPublisher.publishEvent(new EntityChangedEvent<>(entity.getClass().getSimpleName(), entity, ChangeType.UPDATED, entity.getId()));
 
     }
 
     @PostRemove
     public void onPostRemove(AbstractEntity entity) {
-        logger.info("An existing {} entity has been removed: {}", entity.getClass().getSimpleName(), entity);
+        logger.debug("An existing {} entity has been removed: {}", entity.getClass().getSimpleName(), entity);
         applicationEventPublisher.publishEvent(new EntityChangedEvent<>(entity.getClass().getSimpleName(), entity, ChangeType.DELETED, entity.getId()));
     }
 }

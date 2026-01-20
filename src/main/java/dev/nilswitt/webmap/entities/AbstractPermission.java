@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @MappedSuperclass
-public class AbstractPermission extends AbstractEntity {
+public abstract class AbstractPermission extends AbstractEntity {
 
     @Enumerated
     @Getter

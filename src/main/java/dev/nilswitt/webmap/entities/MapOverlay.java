@@ -6,9 +6,13 @@ import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Set;
 
+@Setter
+@Getter
 @Entity
 @EntityListeners(EntityEventListener.class)
 public class MapOverlay extends AbstractEntity {
@@ -38,14 +42,6 @@ public class MapOverlay extends AbstractEntity {
     @JsonIgnore
     private Set<SecurityGroup> securityGroups;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @JsonGetter("fullTileUrl")
     public String getFullTileUrl() {
         String baseUrl = getBaseUrl();
@@ -74,43 +70,4 @@ public class MapOverlay extends AbstractEntity {
         return fullUrl.toString();
     }
 
-    public int getLayerVersion() {
-        return layerVersion;
-    }
-
-    public void setLayerVersion(int layerVersion) {
-        this.layerVersion = layerVersion;
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    public String getBasePath() {
-        return basePath;
-    }
-
-    public void setBasePath(String basePath) {
-        this.basePath = basePath;
-    }
-
-    public String getTilePathPattern() {
-        return tilePathPattern;
-    }
-
-    public void setTilePathPattern(String tilePathPattern) {
-        this.tilePathPattern = tilePathPattern;
-    }
-
-    public Set<SecurityGroup> getSecurityGroups() {
-        return securityGroups;
-    }
-
-    public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
-        this.securityGroups = securityGroups;
-    }
 }
