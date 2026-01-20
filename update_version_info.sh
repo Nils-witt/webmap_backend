@@ -13,9 +13,9 @@ fi
 # - Otherwise use ref_name as-is
 if [[ "$ref_name" == v*.*.* ]]; then
   VERSION="${ref_name#v}"
-  sed -i '' "s#<version>.*</version>#<version>${VERSION}</version>#g" pom.xml
-  sed -i '' "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
+  sed -i  "s#<version>.*</version>#<version>${VERSION}</version>#g" pom.xml
+  sed -i "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
 else
   VERSION="$ref_name"
-  sed -i '' "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
+  sed -i "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
 fi
