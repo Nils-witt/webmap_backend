@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+      - name: Update Build Versions
+        run: ./update_version_info.sh
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

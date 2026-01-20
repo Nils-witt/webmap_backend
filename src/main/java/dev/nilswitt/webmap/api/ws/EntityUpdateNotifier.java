@@ -58,7 +58,6 @@ public class EntityUpdateNotifier {
 
         for (User user : userSessions.keySet()) {
             if (this.hasPermission(user, event)) {
-                log.info("Sending entity update to user {}: {}", user.getUsername(), json);
                 for (String sessionId : userSessions.get(user)) {
                     WebSocketSession session = registry.getSessionById(sessionId);
                     if (session != null && session.isOpen()) {
@@ -69,8 +68,6 @@ public class EntityUpdateNotifier {
                         }
                     }
                 }
-            } else {
-                log.info("User {} does not have permission to receive update for entity {} with ID {}", user.getUsername(), event.className(), event.id());
             }
         }
     }
