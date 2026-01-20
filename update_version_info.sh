@@ -15,11 +15,10 @@ if [[ "$ref_name" == v*.*.* ]]; then
   VERSION="${ref_name#v}"
   echo "Detected version tag: $ref_name"
   sed -i  "s#^(?:[\s\S]*?)(<version>[^<]*<\/version>)#<version>${VERSION}</version>#g" pom.xml
-  sed -i "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
 else
   VERSION="$ref_name"
   echo "Using branch name as version: $ref_name"
-  sed -i "s#^application.version=.*#application.version=${VERSION}#g" src/main/resources/application.properties
+  sed -i  "s#^(?:[\s\S]*?)(<version>[^<]*<\/version>)#<version>${VERSION}</version>#g" pom.xml
 fi
 
 echo "Updated version to '${VERSION}'"
