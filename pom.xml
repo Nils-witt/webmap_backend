@@ -4,7 +4,7 @@
     <!-- Project from https://start.vaadin.com/98a680f8-ecd2-4f0c-b80a-085516c16a59 -->
     <groupId>dev.nilswitt.webmap</groupId>
     <artifactId>backend</artifactId>
-    <version>-.-.-Artifact</version>
+    <version>0.0.0-Dev</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -150,7 +150,8 @@
                 <version>0.1.0</version> <!-- Use the latest stable version if possible -->
                 <extensions>true</extensions>
                 <configuration>
-                    <strategy hint="git">
+                    <strategy hint="file">
+                        <versionFilePath>VERSION</versionFilePath>
                         <!-- Strategy specific configuration goes here -->
                     </strategy>
                 </configuration>
