@@ -34,7 +34,7 @@ public class EntityUpdateNotifier {
     public void onUserNameChanged(EntityChangedEvent<? extends AbstractEntity> event) {
 
         Payload payload = buildPayload(event);
-        String baseTopic = "/updates/entities/" + event.className();
+        String baseTopic = "/updates/entities/" + event.className().toLowerCase();
         String entityTopic = baseTopic + "/" + event.id();
         log.info("Updating entity {} to {}", entityTopic, baseTopic);
 
