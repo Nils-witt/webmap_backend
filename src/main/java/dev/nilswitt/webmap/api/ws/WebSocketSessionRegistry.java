@@ -5,6 +5,7 @@ import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.security.PermissionUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -26,6 +27,19 @@ public class WebSocketSessionRegistry {
         Object userObj = session.getAttributes().get("user");
         if (userObj instanceof User user) {
             userSessions.computeIfAbsent(user, k -> ConcurrentHashMap.newKeySet()).add(session.getId());
+        }
+    }
+    @Scheduled(fixedRate = 30000)
+    public void keepalive(){
+        logger.info("Keep alive sessions");
+        for(WebSocketSession session : sessions.values()){
+            try {
+                if(session.isOpen()) {
+                    session.sendMessage(new TextMessage("ping"));
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to send keepalive ping to session {}: {}", session.getId(), e.getMessage());
+            }
         }
     }
 
