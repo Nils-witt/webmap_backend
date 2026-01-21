@@ -144,6 +144,17 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>me.ccampo</groupId>
+                <artifactId>git-version-maven-plugin</artifactId>
+                <version>0.1.0</version> <!-- Use the latest stable version if possible -->
+                <extensions>true</extensions>
+                <configuration>
+                    <strategy hint="git">
+                        <!-- Strategy specific configuration goes here -->
+                    </strategy>
+                </configuration>
+            </plugin>
         </plugins>
 
     </build>
