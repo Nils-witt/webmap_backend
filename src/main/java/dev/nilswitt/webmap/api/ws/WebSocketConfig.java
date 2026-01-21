@@ -21,7 +21,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
-                .addHandler(plainWebSocketHandler, "/ws")
+                .addHandler(plainWebSocketHandler, "/api/ws")
                 .addInterceptors(new JWTHandshakeInterceptor(jwtComponent))
                 .setAllowedOriginPatterns("*");
     }
