@@ -31,7 +31,7 @@ public class WebSocketSessionRegistry {
     }
     @Scheduled(fixedRate = 30000)
     public void keepalive(){
-        logger.info("Keep alive sessions");
+        logger.debug("Keep alive sessions");
         for(WebSocketSession session : sessions.values()){
             try {
                 if(session.isOpen()) {
