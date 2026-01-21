@@ -2,9 +2,9 @@ package dev.nilswitt.webmap.api.ws;
 
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.security.JWTComponent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.socket.WebSocketHandler;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class JWTHandshakeInterceptor implements HandshakeInterceptor {
 
 
-    private final Logger log = LoggerFactory.getLogger(JWTHandshakeInterceptor.class);
+    private final Logger log = LogManager.getLogger(JWTHandshakeInterceptor.class);
 
 
     private final JWTComponent jwtComponent;
@@ -41,17 +41,32 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
                     return true;
                 } catch (Exception e) {
                     log.warn("JWT validation failed: {}", e.getMessage());
-                    return false;
                 }
-
             } else {
                 log.warn("Invalid Authorization header format");
-                return false;
             }
         } else {
-            log.warn("Missing Authorization header");
-            return false;
+            log.debug("Missing Authorization header");
         }
+        if (request.getURI().getQuery() != null) {
+            String[] queryParams = request.getURI().getQuery().split("&");
+            for (String param : queryParams) {
+                String[] keyValue = param.split("=");
+                if (keyValue.length == 2 && keyValue[0].equals("token")) {
+                    try {
+                        User user = jwtComponent.getUserFromToken(keyValue[1]);
+
+                        attributes.put("jwtToken", keyValue[1]);
+                        attributes.put("user", user);
+                        return true;
+                    } catch (Exception e) {
+                        log.warn("JWT validation failed: {}", e.getMessage());
+                    }
+
+                }
+            }
+        }
+        return false;
     }
 
     @Override
