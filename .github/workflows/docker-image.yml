@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-
+  JAVA_VER: "21"
 
 jobs:
   build:
@@ -32,10 +32,10 @@ jobs:
         uses: actions/checkout@v6
       - name: Update Build Versions
         run: echo "${{ github.ref_name }}" > VERSION
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ env.JAVA_VER }}
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: ${{ env.JAVA_VER }}
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
