@@ -28,7 +28,7 @@ public class UnitFilter extends  EntityFilter<Unit> {
     ExampleMatcher buildMatcher() {
         ExampleMatcher matcher = ExampleMatcher.matchingAll()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withIgnorePaths("id", "speakRequest", "position.latitude", "position.longitude", "position.altitude");
+                .withIgnorePaths("id", "speakRequest", "position.latitude", "position.longitude", "position.altitude","icon");
         if (!ignoreStatus) {
             matcher = matcher.withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact());
         }else {

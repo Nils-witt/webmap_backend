@@ -75,7 +75,7 @@ public class WebSocketSessionRegistry {
         }
         return sessionIds.stream()
                 .map(sessions::get)
-                .filter(session -> session != null)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
