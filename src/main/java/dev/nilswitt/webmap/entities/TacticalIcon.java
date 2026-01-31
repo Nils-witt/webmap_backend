@@ -22,6 +22,9 @@ public class TacticalIcon {
 
     @JsonGetter("grundzeichen")
     public String getGrundzeichenId() {
+        if (grundzeichen == null) {
+            return "";
+        }
         return grundzeichen.getId();
     }
 
@@ -30,6 +33,9 @@ public class TacticalIcon {
 
     @JsonGetter("organisation")
     public String getOrganisationId() {
+        if (organisation == null) {
+            return "";
+        }
         return organisation.getId();
     }
 
@@ -38,6 +44,9 @@ public class TacticalIcon {
 
     @JsonGetter("fachaufgabe")
     public String getFachaufgabeId() {
+        if (fachaufgabe == null) {
+            return "";
+        }
         return fachaufgabe.getId();
     }
 
@@ -46,6 +55,9 @@ public class TacticalIcon {
 
     @JsonGetter("einheit")
     public String getEinheitId() {
+        if (einheit == null) {
+            return "";
+        }
         return einheit.getId();
     }
 
@@ -54,6 +66,9 @@ public class TacticalIcon {
 
     @JsonGetter("verwaltungsstufe")
     public String getVerwaltungsstufeId() {
+        if (verwaltungsstufe == null) {
+            return "";
+        }
         return verwaltungsstufe.getId();
     }
 
@@ -62,6 +77,9 @@ public class TacticalIcon {
 
     @JsonGetter("funktion")
     public String getFunktionId() {
+        if (funktion == null) {
+            return "";
+        }
         return funktion.getId();
     }
 
@@ -70,6 +88,9 @@ public class TacticalIcon {
 
     @JsonGetter("symbol")
     public String getSymbolId() {
+        if (symbol == null) {
+            return "";
+        }
         return symbol.getId();
     }
 
