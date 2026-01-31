@@ -5,7 +5,6 @@ import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import dev.nilswitt.webmap.entities.MapItem;
-import dev.nilswitt.webmap.entities.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Example;

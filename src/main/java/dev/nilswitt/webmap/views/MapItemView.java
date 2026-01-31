@@ -17,17 +17,15 @@ import dev.nilswitt.webmap.entities.MapItem;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.*;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import dev.nilswitt.webmap.views.components.MapItemEditDialog;
 import dev.nilswitt.webmap.views.components.MapItemPermissionsDialog;
-import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import dev.nilswitt.webmap.views.filters.MapItemFilter;
-import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
-import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/map/items")
 @Menu(order = 1, icon = "vaadin:map-marker", title = "Map Items")

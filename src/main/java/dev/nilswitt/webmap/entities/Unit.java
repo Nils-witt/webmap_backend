@@ -1,7 +1,10 @@
 package dev.nilswitt.webmap.entities;
 
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

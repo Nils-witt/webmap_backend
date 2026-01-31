@@ -17,15 +17,14 @@ import dev.nilswitt.webmap.base.ui.ViewToolbar;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+import dev.nilswitt.webmap.security.PermissionUtil;
 import dev.nilswitt.webmap.views.components.SecurityGroupEditDialog;
 import dev.nilswitt.webmap.views.filters.SecurityGroupFilter;
-import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
-import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route(value = "ui/groups", layout = MainLayout.class)
 @Menu(order = 4, icon = "vaadin:key", title = "Roles")

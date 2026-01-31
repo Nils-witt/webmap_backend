@@ -2,13 +2,10 @@ package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
-import dev.nilswitt.webmap.api.exceptions.UserNotFoundException;
-import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
 import dev.nilswitt.webmap.security.PermissionUtil;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

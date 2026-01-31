@@ -1,12 +1,9 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

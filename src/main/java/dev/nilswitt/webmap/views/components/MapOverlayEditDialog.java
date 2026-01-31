@@ -12,12 +12,7 @@ import com.vaadin.flow.data.binder.Binder;
 import dev.nilswitt.webmap.entities.MapOverlay;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
-import dev.nilswitt.webmap.records.OverlayConfig;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class MapOverlayEditDialog extends Dialog {

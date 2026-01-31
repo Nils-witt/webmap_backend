@@ -14,7 +14,6 @@ import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 
-
 import java.util.function.Consumer;
 
 public class UserEditDialog extends Dialog {

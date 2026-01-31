@@ -20,7 +20,6 @@ import dev.nilswitt.webmap.entities.repositories.*;
 import dev.nilswitt.webmap.security.PermissionUtil;
 import dev.nilswitt.webmap.views.components.MapBaseLayerEditDialog;
 import dev.nilswitt.webmap.views.components.MapBaseLayerPermissionsDialog;
-import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
 import jakarta.annotation.security.RolesAllowed;
 
 import static com.vaadin.flow.spring.data.VaadinSpringDataHelpers.toSpringPageRequest;

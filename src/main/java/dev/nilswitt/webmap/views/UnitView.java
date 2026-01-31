@@ -13,18 +13,20 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import dev.nilswitt.webmap.base.ui.ViewToolbar;
-import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.*;
-import dev.nilswitt.webmap.views.components.*;
+import dev.nilswitt.webmap.security.PermissionUtil;
+import dev.nilswitt.webmap.views.components.UnitEditDialog;
+import dev.nilswitt.webmap.views.components.UnitIconEditDialog;
+import dev.nilswitt.webmap.views.components.UnitPermissionsDialog;
 import dev.nilswitt.webmap.views.filters.UnitFilter;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Objects;
-import dev.nilswitt.webmap.security.PermissionUtil;
 
 @Route("ui/units")
 @Menu(order = 3, icon = "vaadin:road", title = "Units")
