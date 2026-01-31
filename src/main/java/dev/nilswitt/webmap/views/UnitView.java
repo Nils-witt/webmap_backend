@@ -17,10 +17,7 @@ import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.*;
-import dev.nilswitt.webmap.views.components.MapItemPermissionsDialog;
-import dev.nilswitt.webmap.views.components.OverlayPermissionsDialog;
-import dev.nilswitt.webmap.views.components.UnitEditDialog;
-import dev.nilswitt.webmap.views.components.UnitPermissionsDialog;
+import dev.nilswitt.webmap.views.components.*;
 import dev.nilswitt.webmap.views.filters.UnitFilter;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +33,7 @@ public class UnitView extends VerticalLayout {
     private final Grid<Unit> unitGrid = new Grid<>();
     private final Button createBtn = new Button("Create");
     private final UnitEditDialog editDialog;
+    private final UnitIconEditDialog iconEditDialog;
     private final UnitPermissionsDialog permissionsDialog;
 
     private final PermissionUtil permissionUtil;
@@ -52,6 +50,10 @@ public class UnitView extends VerticalLayout {
         this.unitRepository = unitRepository;
         this.authenticationContext = authenticationContext;
         this.editDialog = new UnitEditDialog(unit -> {
+            this.unitRepository.save(unit);
+            this.refresh();
+        });
+        this.iconEditDialog = new UnitIconEditDialog(unit -> {
             this.unitRepository.save(unit);
             this.refresh();
         });
@@ -153,6 +155,14 @@ public class UnitView extends VerticalLayout {
                     return;
                 }
                 editDialog.open(unit);
+            }));
+            this.addItem("Edit Icon", event -> event.getItem().ifPresent(unit -> {
+                User user = currentUser();
+                if (!permissionUtil.hasAccess(user, SecurityGroup.UserRoleScopeEnum.EDIT, SecurityGroup.UserRoleTypeEnum.UNIT)) {
+                    Notification.show("You cannot edit units");
+                    return;
+                }
+                iconEditDialog.open(unit);
             }));
             this.addItem("Delete", event -> event.getItem().ifPresent(unit -> {
                 User user = currentUser();

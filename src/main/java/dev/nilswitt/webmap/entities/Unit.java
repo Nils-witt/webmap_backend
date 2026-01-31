@@ -15,9 +15,11 @@ public class Unit extends AbstractEntity {
 
     @NotBlank
     @Size(max = 100)
-    @Column(nullable = false, unique = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String name;
 
+    @Embedded
+    private TacticalIcon icon = new TacticalIcon();
 
     @Embedded
     private EmbeddedPosition position;
