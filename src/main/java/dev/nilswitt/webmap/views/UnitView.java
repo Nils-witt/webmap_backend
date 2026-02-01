@@ -92,7 +92,7 @@ public class UnitView extends VerticalLayout {
     }
 
     public List<Unit> list(Pageable pageable) {
-
+        // this.unitFilter.getExample(),
         return this.unitRepository.findAll(this.unitFilter.getExample(), pageable).stream().toList();
     }
 
@@ -102,11 +102,11 @@ public class UnitView extends VerticalLayout {
 
     private void configureGrid() {
         this.unitGrid.setItemsPageable(this::list);
-        this.unitGrid.addColumn(Unit::getName).setKey(String.valueOf(UnitFilter.Columns.NAME)).setHeader("Name").setSortable(true);
+        this.unitGrid.addColumn(Unit::getName).setKey("name").setHeader("Name").setSortable(true);
         this.unitGrid.addColumn(unit -> unit.getPosition().getLatitude()).setHeader("Latitude");
         this.unitGrid.addColumn(unit -> unit.getPosition().getLongitude()).setHeader("Longitude");
         this.unitGrid.addColumn(unit -> unit.getPosition().getAltitude()).setHeader("Altitude");
-        this.unitGrid.addColumn(Unit::getStatus).setKey(String.valueOf(UnitFilter.Columns.STATUS)).setHeader("Status").setSortable(true);
+        this.unitGrid.addColumn(Unit::getStatus).setKey("status").setHeader("Status");
         this.unitGrid.addColumn(unit -> unit.isSpeakRequest() ? "Yes" : "No").setHeader("Speak Request");
 
         this.unitGrid.setEmptyStateText("There are no units");

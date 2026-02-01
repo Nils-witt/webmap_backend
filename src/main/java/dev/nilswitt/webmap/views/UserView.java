@@ -86,14 +86,14 @@ public class UserView extends VerticalLayout {
     }
 
     private void setUpGrid() {
-        this.userGrid.addColumn(User::getUsername).setKey(String.valueOf(UserFilter.Columns.USERNAME)).setHeader("Username").setSortable(true).setComparator(User::getUsername);
-        this.userGrid.addColumn(User::getFirstName).setKey(String.valueOf(UserFilter.Columns.FIRST_NAME)).setHeader("First Name").setSortable(true);
-        this.userGrid.addColumn(User::getLastName).setKey(String.valueOf(UserFilter.Columns.LAST_NAME)).setHeader("Last Name").setSortable(true);
-        this.userGrid.addColumn(User::getEmail).setKey(String.valueOf(UserFilter.Columns.EMAIL)).setHeader("Email").setSortable(true);
-        this.userGrid.addColumn(User::isEnabled).setKey(String.valueOf(UserFilter.Columns.ENABLED)).setHeader("Enabled").setSortable(true);
-        this.userGrid.addColumn(u -> !u.isAccountNonLocked()).setKey(String.valueOf(UserFilter.Columns.IS_LOCKED)).setHeader("Is Locked").setSortable(true);
+        this.userGrid.addColumn(User::getUsername).setKey("username").setHeader("Username").setSortable(true).setComparator(User::getUsername);
+        this.userGrid.addColumn(User::getFirstName).setKey("firstName").setHeader("First Name").setSortable(true);
+        this.userGrid.addColumn(User::getLastName).setKey("lastName").setHeader("Last Name").setSortable(true);
+        this.userGrid.addColumn(User::getEmail).setKey("email").setHeader("Email").setSortable(true);
+        this.userGrid.addColumn(User::isEnabled).setKey("enabled").setHeader("Enabled").setSortable(true);
+        this.userGrid.addColumn(u -> !u.isAccountNonLocked()).setKey("isLocked").setHeader("Is Locked").setSortable(true);
         this.userGrid.addColumn(user -> String.join(", ", user.getSecurityGroups().stream().map(SecurityGroup::getName).toList()))
-                .setHeader("Groups").setKey(String.valueOf(UserFilter.Columns.GROUPS));
+                .setHeader("Groups").setKey("groups");
         this.userGrid.setItemsPageable(this::list);
 
         this.userGrid.setEmptyStateText("There are no users");

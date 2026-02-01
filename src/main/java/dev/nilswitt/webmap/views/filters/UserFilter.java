@@ -15,16 +15,6 @@ import java.util.function.Consumer;
 public class UserFilter extends EntityFilter<User> {
     Logger logger = LogManager.getLogger(UnitFilter.class);
 
-    public enum Columns {
-        USERNAME,
-        FIRST_NAME,
-        LAST_NAME,
-        EMAIL,
-        ENABLED,
-        IS_LOCKED,
-        GROUPS
-    }
-
     public UserFilter(Consumer<Example<User>> filter) {
         super(filter);
     }
@@ -41,7 +31,7 @@ public class UserFilter extends EntityFilter<User> {
     @Override
     public Component getComponent(String columnKey) {
         switch (columnKey) {
-            case "USERNAME" -> {
+            case "username" -> {
                 TextField usernameField = new TextField();
                 usernameField.setClearButtonVisible(true);
                 usernameField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -51,7 +41,7 @@ public class UserFilter extends EntityFilter<User> {
                 });
                 return usernameField;
             }
-            case "FIRST_NAME" -> {
+            case "firstName" -> {
                 TextField firstNameField = new TextField();
                 firstNameField.setClearButtonVisible(true);
                 firstNameField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -61,7 +51,7 @@ public class UserFilter extends EntityFilter<User> {
                 });
                 return firstNameField;
             }
-            case "LAST_NAME" -> {
+            case "lastName" -> {
                 TextField lastNameField = new TextField();
                 lastNameField.setClearButtonVisible(true);
                 lastNameField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -71,7 +61,7 @@ public class UserFilter extends EntityFilter<User> {
                 });
                 return lastNameField;
             }
-            case "EMAIL" -> {
+            case "email" -> {
                 TextField emailField = new TextField();
                 emailField.setClearButtonVisible(true);
                 emailField.setValueChangeMode(ValueChangeMode.EAGER);

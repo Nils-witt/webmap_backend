@@ -15,12 +15,6 @@ public class UnitFilter extends  EntityFilter<Unit> {
 
     private boolean ignoreStatus = false;
 
-    public enum Columns {
-        NAME,
-        STATUS
-
-    }
-
     public UnitFilter(Consumer<Example<Unit>> filter) {
         super(filter);
     }
@@ -40,7 +34,7 @@ public class UnitFilter extends  EntityFilter<Unit> {
     @Override
     public Component getComponent(String columnKey) {
         switch (columnKey) {
-            case "NAME":
+            case "name":
                 TextField name = new TextField();
                 name.setClearButtonVisible(true);
                 name.setValueChangeMode(ValueChangeMode.EAGER);
@@ -49,7 +43,7 @@ public class UnitFilter extends  EntityFilter<Unit> {
                     update();
                 });
                 return name;
-            case "STATUS":
+            case "status":
                 IntegerField statusField = new IntegerField();
                 statusField.setClearButtonVisible(true);
                 statusField.setValueChangeMode(ValueChangeMode.EAGER);
