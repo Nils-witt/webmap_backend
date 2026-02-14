@@ -27,6 +27,10 @@ public class SecurityGroup extends AbstractEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+
+    @Column(nullable = false, length = 255, columnDefinition = "")
+    private String ssoGroupName = "";
+
     @ManyToMany(mappedBy = "securityGroups")
     @JsonIgnore
     private Set<User> users;
@@ -60,6 +64,7 @@ public class SecurityGroup extends AbstractEntity {
         MAPOVERLAY,
         MAPBASELAYER,
         USER,
+        MAPGROUP,
         SECURITYGROUP,
         UNIT,
         MAPITEM,
