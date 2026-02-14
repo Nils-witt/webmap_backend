@@ -1,8 +1,10 @@
-package dev.nilswitt.webmap.api;
+package dev.nilswitt.webmap.api.controller;
 
+import dev.nilswitt.webmap.api.dtos.MapBaseLayerDto;
 import dev.nilswitt.webmap.entities.MapBaseLayer;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -10,13 +12,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @Component
-public class MapBaseLayerModelAssembler implements RepresentationModelAssembler<MapBaseLayer, EntityModel<MapBaseLayer>> {
+public class MapBaseLayerModelAssembler implements RepresentationModelAssembler<MapBaseLayerDto, EntityModel<MapBaseLayerDto>> {
 
     @Override
-    public EntityModel<MapBaseLayer> toModel(MapBaseLayer entity) {
+    public EntityModel<MapBaseLayerDto> toModel(MapBaseLayerDto entity) {
 
         return EntityModel.of(entity,
-                linkTo(methodOn(MapBaseLayerController.class).one(entity.getId(), null)).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(methodOn(MapBaseLayerController.class).one(entity.getId(), null)).withSelfRel(),
                 linkTo(methodOn(MapBaseLayerController.class).all(null)).withRel("map/baselayers"));
     }
 }

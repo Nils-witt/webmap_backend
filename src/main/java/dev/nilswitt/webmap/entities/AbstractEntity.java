@@ -1,5 +1,6 @@
 package dev.nilswitt.webmap.entities;
 
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -33,5 +34,7 @@ public abstract class AbstractEntity {
         this.updatedAt = Instant.now();
     }
 
+
+    public abstract AbstractEntityDto toDto();
 
 }

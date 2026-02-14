@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import dev.nilswitt.webmap.entities.AbstractEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Example;
@@ -11,11 +12,11 @@ import org.springframework.data.domain.ExampleMatcher;
 
 import java.util.function.Consumer;
 
+@Slf4j
 public abstract class EntityFilter<T extends AbstractEntity> {
 
     private T entityProbe;
     private Consumer<Example<T>> filter;
-    private Logger logger = LogManager.getLogger(EntityFilter.class);
 
     public EntityFilter(Consumer<Example<T>> filter) {
         this.filter = filter;
@@ -23,7 +24,7 @@ public abstract class EntityFilter<T extends AbstractEntity> {
             this.entityProbe = (T) ((Class<T>) ((java.lang.reflect.ParameterizedType) getClass()
                     .getGenericSuperclass()).getActualTypeArguments()[0]).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            logger.error("Failed to create entity probe instance", e);
+            log.error("Failed to create entity probe instance", e);
             throw new RuntimeException(e);
         }
     }

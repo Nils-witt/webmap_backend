@@ -1,4 +1,4 @@
-package dev.nilswitt.webmap.api;
+package dev.nilswitt.webmap.api.controller;
 
 import dev.nilswitt.webmap.entities.Unit;
 import org.springframework.hateoas.CollectionModel;

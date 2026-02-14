@@ -8,50 +8,39 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.MapGroup;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.function.Consumer;
 
 @Log4j2
-public class SecurityGroupEditDialog extends Dialog {
+public class MapGroupEditDialog extends Dialog {
 
-    private SecurityGroup securityGroup = null;
-    private final Binder<SecurityGroup> binder = new Binder<>(SecurityGroup.class);
-    private final Consumer<SecurityGroup> editCallback;
+    private MapGroup securityGroup = null;
+    private final Binder<MapGroup> binder = new Binder<>(MapGroup.class);
+    private final Consumer<MapGroup> editCallback;
 
     private final TextField nameField = new TextField("Name");
-    private final TextField ssoGroupNameField = new TextField("SSO Group Name");
-    private final MultiSelectComboBox<String> rolesField = new MultiSelectComboBox<>("Roles");
 
 
-    public SecurityGroupEditDialog(Consumer<SecurityGroup> editCallback) {
+    public MapGroupEditDialog(Consumer<MapGroup> editCallback) {
         this.editCallback = editCallback;
         this.setModality(ModalityMode.STRICT);
         this.setCloseOnOutsideClick(false);
         this.setHeaderTitle("Edit User");
 
-        this.binder.bind(nameField, SecurityGroup::getName, SecurityGroup::setName);
-        this.binder.bind(rolesField, SecurityGroup::getRoles, SecurityGroup::setRoles);
-        this.binder.bind(ssoGroupNameField, SecurityGroup::getSsoGroupName, SecurityGroup::setSsoGroupName);
-
-        this.ssoGroupNameField.setRequired(false);
-
+        this.binder.bind(nameField, MapGroup::getName, MapGroup::setName);
         this.nameField.setRequired(true);
 
-        this.rolesField.setRequired(false);
-        this.rolesField.setItems(SecurityGroup.availableRoles());
 
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);
         formLayout.addFormRow(this.nameField);
-        formLayout.addFormRow(this.ssoGroupNameField);
-        formLayout.addFormRow(this.rolesField);
 
 
         Button saveButton = new Button("Save", event -> {
             if (this.securityGroup == null) {
-                this.securityGroup = new SecurityGroup("NaN");
+                this.securityGroup = new MapGroup();
             }
             if (this.binder.writeBeanIfValid(securityGroup)) {
                 if (this.editCallback == null) {
@@ -82,7 +71,7 @@ public class SecurityGroupEditDialog extends Dialog {
         // Implementation for setting error message
     }
 
-    public void open(SecurityGroup securityGroup) {
+    public void open(MapGroup securityGroup) {
         this.securityGroup = securityGroup;
         this.binder.readBean(securityGroup);
         if (securityGroup == null) {

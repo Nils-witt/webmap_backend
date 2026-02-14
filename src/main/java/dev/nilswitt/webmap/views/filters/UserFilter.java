@@ -13,7 +13,6 @@ import org.springframework.data.domain.ExampleMatcher;
 import java.util.function.Consumer;
 
 public class UserFilter extends EntityFilter<User> {
-    Logger logger = LogManager.getLogger(UnitFilter.class);
 
     public UserFilter(Consumer<Example<User>> filter) {
         super(filter);
@@ -68,7 +67,6 @@ public class UserFilter extends EntityFilter<User> {
                 emailField.addValueChangeListener(event -> {
                     getEntityProbe().setEmail(event.getValue().isEmpty() ? null : event.getValue());
                     update();
-                    logger.info("Filtering by email: {}", getEntityProbe().getEmail());
                 });
                 return emailField;
             }

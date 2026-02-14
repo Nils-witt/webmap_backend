@@ -13,7 +13,6 @@ import org.springframework.data.domain.ExampleMatcher;
 import java.util.function.Consumer;
 
 public class SecurityGroupFilter extends EntityFilter<SecurityGroup> {
-    Logger logger = LogManager.getLogger(UnitFilter.class);
 
     public enum Columns {
         NAME
@@ -26,7 +25,7 @@ public class SecurityGroupFilter extends EntityFilter<SecurityGroup> {
     ExampleMatcher buildMatcher() {
         return ExampleMatcher.matchingAll()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase())
-                .withIgnorePaths("id", "users", "roles", "overlays");
+                .withIgnorePaths("id", "users", "roles", "overlays", "ssoGroupName");
     }
 
     @Override

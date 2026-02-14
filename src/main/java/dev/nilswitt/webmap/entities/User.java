@@ -1,6 +1,8 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
+import dev.nilswitt.webmap.api.dtos.UserDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -143,4 +145,25 @@ public class User extends AbstractEntity implements UserDetails {
                 ", updatedAt=" + this.getUpdatedAt() +
                 '}';
     }
+
+    public static User of(UserDto userDto) {
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        return user;
+    }
+
+    public UserDto toDto() {
+        UserDto dto = new UserDto();
+        dto.setId(this.getId());
+        dto.setUsername(this.username);
+        dto.setEmail(this.email);
+        dto.setFirstName(this.firstName);
+        dto.setLastName(this.lastName);
+        return dto;
+    }
+
+
 }

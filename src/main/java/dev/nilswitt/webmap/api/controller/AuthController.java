@@ -1,4 +1,4 @@
-package dev.nilswitt.webmap.api;
+package dev.nilswitt.webmap.api.controller;
 
 import dev.nilswitt.webmap.api.exceptions.UnauthorizedException;
 import dev.nilswitt.webmap.entities.User;
@@ -16,7 +16,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("api/token")
 public class AuthController {
-    private Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JWTComponent jwtHandler;
@@ -31,7 +30,6 @@ public class AuthController {
     @GetMapping
     Map<String, Object> validate(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        logger.info("Validating token: {}", token);
         try {
             if (token == null) {
                 throw new UnauthorizedException();

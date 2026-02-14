@@ -1,5 +1,6 @@
 package dev.nilswitt.webmap.api.ws;
 
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
 import dev.nilswitt.webmap.entities.*;
 import dev.nilswitt.webmap.events.ChangeType;
 import dev.nilswitt.webmap.events.EntityChangedEvent;
@@ -92,7 +93,7 @@ public class EntityUpdateNotifier {
         payload.entityType = event.entity().getClass().getSimpleName();
         payload.entityId = event.id();
         payload.changeType = event.changeType();
-        payload.entity = event.entity();
+        payload.entity = event.entity().toDto();
         return payload;
 
     }
@@ -109,7 +110,7 @@ public class EntityUpdateNotifier {
         public String entityType;
         public UUID entityId;
         public ChangeType changeType;
-        public AbstractEntity entity;
+        public AbstractEntityDto entity;
     }
 
 
