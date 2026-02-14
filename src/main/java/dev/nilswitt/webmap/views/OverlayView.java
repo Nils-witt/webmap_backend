@@ -50,6 +50,7 @@ public class OverlayView extends VerticalLayout {
     private final AuthenticationContext authenticationContext;
     private final UserRepository userRepository;
     private final PermissionUtil permissionUtil;
+    private final MapGroupRepository mapGroupRepository;
 
     public OverlayView(
             MapOverlayRepository mapOverlayRepository,
@@ -58,7 +59,7 @@ public class OverlayView extends VerticalLayout {
             SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
             AuthenticationContext authenticationContext,
             UserPermissionsRepository userPermissionsRepository,
-            UserRepository userRepository, PermissionUtil permissionUtil) {
+            UserRepository userRepository, PermissionUtil permissionUtil, MapGroupRepository mapGroupRepository) {
         this.permissionUtil = permissionUtil;
         this.mapOverlayRepository = mapOverlayRepository;
         this.overlayConfig = overlayConfig;
@@ -70,7 +71,7 @@ public class OverlayView extends VerticalLayout {
         this.editDialog = new MapOverlayEditDialog((mapOverlay) -> {
             this.mapOverlayRepository.save(mapOverlay);
             this.mapOverlayGrid.getDataProvider().refreshAll();
-        }, securityGroupRepository);
+        }, securityGroupRepository, mapGroupRepository);
 
         this.permissionsDialog = new OverlayPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
 
@@ -108,6 +109,7 @@ public class OverlayView extends VerticalLayout {
         this.add(new ViewToolbar("Overlay List", ViewToolbar.group(createBtn)));
         this.add(mapOverlayGrid);
         this.add(editDialog);
+        this.mapGroupRepository = mapGroupRepository;
     }
 
     private User currentUser() {

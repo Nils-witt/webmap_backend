@@ -1,6 +1,7 @@
 package dev.nilswitt.webmap.entities;
 
 
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -20,4 +21,10 @@ public class SecurityGroupPermission extends AbstractPermission {
     @Setter
     private SecurityGroup securityGroup;
 
+
+    public AbstractEntityDto toDto() {
+        AbstractEntityDto dto = new AbstractEntityDto();
+        dto.setId(getId());
+        return dto;
+    }
 }

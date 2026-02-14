@@ -2,6 +2,7 @@ package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.nilswitt.webmap.api.dtos.MapOverlayDto;
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -42,6 +44,10 @@ public class MapOverlay extends AbstractEntity {
     @JsonIgnore
     private Set<SecurityGroup> securityGroups;
 
+    @ManyToOne
+    @JoinColumn(name = "map_group_id")
+    private MapGroup mapGroup;
+
     @JsonGetter("fullTileUrl")
     public String getFullTileUrl() {
         String baseUrl = getBaseUrl();
@@ -70,4 +76,15 @@ public class MapOverlay extends AbstractEntity {
         return fullUrl.toString();
     }
 
+    public MapOverlayDto toDto() {
+        MapOverlayDto dto = new MapOverlayDto();
+        dto.setId(getId());
+        dto.setName(getName());
+        dto.setBaseUrl(getBaseUrl());
+        dto.setBasePath(getBasePath());
+        dto.setTilePathPattern(getTilePathPattern());
+        dto.setLayerVersion(getLayerVersion());
+        dto.setMapGroupId(getMapGroup() != null ? getMapGroup().getId() : null);
+        return dto;
+    }
 }

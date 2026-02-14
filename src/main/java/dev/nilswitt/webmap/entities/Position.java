@@ -1,5 +1,6 @@
 package dev.nilswitt.webmap.entities;
 
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,13 @@ public class Position extends AbstractEntity implements PositionInterface {
     public Position(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+
+    public AbstractEntityDto toDto() {
+        AbstractEntityDto dto = new AbstractEntityDto();
+        dto.setId(getId());
+        return dto;
     }
 
 }

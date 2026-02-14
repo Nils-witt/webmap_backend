@@ -40,23 +40,24 @@ public class MapItemView extends VerticalLayout {
     private final MapItemFilter mapItemFilter;
     private final AuthenticationContext authenticationContext;
     private final PermissionUtil permissionUtil;
+
     public MapItemView(MapItemRepository mapItemRepository, AuthenticationContext authenticationContext, SecurityGroupRepository securityGroupRepository,
                        SecurityGroupPermissionsRepository securityGroupPermissionsRepository,
                        UserPermissionsRepository userPermissionsRepository,
-                       UserRepository userRepository, PermissionUtil permissionUtil) {
+                       UserRepository userRepository, PermissionUtil permissionUtil, MapGroupRepository mapGroupRepository) {
         this.permissionUtil = permissionUtil;
         this.mapItemRepository = mapItemRepository;
         this.authenticationContext = authenticationContext;
         this.editDialog = new MapItemEditDialog(mapItem -> {
             this.mapItemRepository.save(mapItem);
             this.mapItemGrid.getDataProvider().refreshAll();
-        });
+        }, mapGroupRepository);
         this.permissionsDialog = new MapItemPermissionsDialog(userPermissionsRepository, userRepository, securityGroupRepository, securityGroupPermissionsRepository);
         this.configureCreateButton();
         this.configureGrid();
         this.mapItemFilter = new MapItemFilter(securityGroupExample -> {
             this.mapItemGrid.getDataProvider().refreshAll();
-        });
+        }, mapGroupRepository);
         this.mapItemFilter.setUp(this.mapItemGrid);
 
         this.setSizeFull();
@@ -84,6 +85,7 @@ public class MapItemView extends VerticalLayout {
     private void configureGrid() {
         this.mapItemGrid.setItemsPageable(this::list);
         this.mapItemGrid.addColumn(MapItem::getName).setKey(String.valueOf(MapItemFilter.Columns.NAME)).setHeader("Name");
+        this.mapItemGrid.addColumn(mapItem -> mapItem.getMapGroup() != null ? mapItem.getMapGroup().getName() : "None").setKey("mapGroup").setHeader("Map Group");
         this.mapItemGrid.addColumn(mapItem -> mapItem.getPosition().getLatitude()).setHeader("Latitude");
         this.mapItemGrid.addColumn(mapItem -> mapItem.getPosition().getLongitude()).setHeader("Longitude");
         this.mapItemGrid.addColumn(mapItem -> mapItem.getPosition().getAltitude()).setHeader("Altitude");

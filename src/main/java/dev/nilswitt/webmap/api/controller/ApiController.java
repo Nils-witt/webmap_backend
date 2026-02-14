@@ -1,4 +1,4 @@
-package dev.nilswitt.webmap.api;
+package dev.nilswitt.webmap.api.controller;
 
 import dev.nilswitt.webmap.entities.Unit;
 import org.springframework.hateoas.CollectionModel;
@@ -16,8 +16,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("api")
 public class ApiController {
 
-    // Aggregate root
-    // tag::get-aggregate-root[]
     @GetMapping("")
     CollectionModel<EntityModel<Unit>> all() {
 
@@ -27,6 +25,5 @@ public class ApiController {
                 linkTo(methodOn(MapController.class).all()).withRel("map")
         );
     }
-    // end::get-aggregate-root[]
 
 }

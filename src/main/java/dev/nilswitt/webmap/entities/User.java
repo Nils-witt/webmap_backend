@@ -1,17 +1,21 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
+import dev.nilswitt.webmap.api.dtos.UserDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
 
 
+@Setter
 @Entity
 @Table(name = "users", indexes = {
         @Index(columnList = "username", name = "idx_users_username"),
@@ -54,7 +58,7 @@ public class User extends AbstractEntity implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
     @JsonIgnore
-    private Set<SecurityGroup> securityGroups;
+    private Set<SecurityGroup> securityGroups = Set.of();
 
     @Column
     private boolean isEnabled = true;
@@ -64,10 +68,6 @@ public class User extends AbstractEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     private Set<UserPermission> userPermissions = new LinkedHashSet<>();
-
-    public void setUserPermissions(Set<UserPermission> userPermissions) {
-        this.userPermissions = userPermissions;
-    }
 
     public User() {
     }
@@ -108,14 +108,6 @@ public class User extends AbstractEntity implements UserDetails {
         return this.isEnabled;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -123,38 +115,11 @@ public class User extends AbstractEntity implements UserDetails {
     }
 
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-
-    public void setSecurityGroups(Set<SecurityGroup> securityGroups) {
-        this.securityGroups = securityGroups;
-    }
-
     public void addSecurityGroup(SecurityGroup securityGroup) {
         if (this.securityGroups == null) {
             this.securityGroups = new HashSet<>();
         }
         this.securityGroups.add(securityGroup);
-    }
-
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
-
-    public void setLocked(boolean locked) {
-        isLocked = locked;
     }
 
     @Override
@@ -180,4 +145,25 @@ public class User extends AbstractEntity implements UserDetails {
                 ", updatedAt=" + this.getUpdatedAt() +
                 '}';
     }
+
+    public static User of(UserDto userDto) {
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        return user;
+    }
+
+    public UserDto toDto() {
+        UserDto dto = new UserDto();
+        dto.setId(this.getId());
+        dto.setUsername(this.username);
+        dto.setEmail(this.email);
+        dto.setFirstName(this.firstName);
+        dto.setLastName(this.lastName);
+        return dto;
+    }
+
+
 }

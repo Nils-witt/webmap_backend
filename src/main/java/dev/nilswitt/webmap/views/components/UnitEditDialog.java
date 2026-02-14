@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
@@ -29,6 +30,7 @@ public class UnitEditDialog extends Dialog {
     private final NumberField latitudeField = new NumberField("Latitude");
     private final NumberField longitudeField = new NumberField("Longitude");
     private final NumberField altitudeField = new NumberField("Altitude");
+    private final DateTimePicker posTimePicker = new DateTimePicker();
 
     public UnitEditDialog(Consumer<Unit> editCallback) {
         this.editCallback = editCallback;
@@ -41,7 +43,7 @@ public class UnitEditDialog extends Dialog {
 
         FormLayout formLayout = new FormLayout();
         formLayout.addClassName("unit-form");
-        formLayout.add(nameField, statusField, speakRequestField, latitudeField, longitudeField, altitudeField);
+        formLayout.add(nameField, statusField, speakRequestField, latitudeField, longitudeField, altitudeField, posTimePicker);
         formLayout.setResponsiveSteps(List.of(new ResponsiveStep("0", 1, LabelsPosition.ASIDE), new ResponsiveStep("600px", 2, LabelsPosition.ASIDE)));
 
         Button saveButton = new Button("Save", event -> {
@@ -97,6 +99,16 @@ public class UnitEditDialog extends Dialog {
         binder.forField(altitudeField)
                 .withNullRepresentation(0.0)
                 .bind(unit -> unit.getPosition().getAltitude(), (unit, value) -> unit.getPosition().setAltitude(value != null ? value : 0.0));
+
+        binder.bind(posTimePicker, unit -> {
+            if (unit.getPosition().getTimestamp() != null) {
+                return unit.getPosition().getTimestamp();
+            } else {
+                return null;
+            }
+        }, (unit, value) -> {
+            unit.getPosition().setTimestamp(value);
+        });
     }
 
     public void setError(String message) {

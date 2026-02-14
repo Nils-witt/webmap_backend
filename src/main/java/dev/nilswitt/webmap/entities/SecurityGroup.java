@@ -1,6 +1,7 @@
 package dev.nilswitt.webmap.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.nilswitt.webmap.api.dtos.SecurityGroupDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
@@ -27,6 +28,10 @@ public class SecurityGroup extends AbstractEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+
+    @Column(nullable = false, length = 255, columnDefinition = "")
+    private String ssoGroupName = "";
+
     @ManyToMany(mappedBy = "securityGroups")
     @JsonIgnore
     private Set<User> users;
@@ -36,7 +41,7 @@ public class SecurityGroup extends AbstractEntity {
     private Set<MapOverlay> overlays = new HashSet<>();
 
     @Column
-    private Set<String> roles= new HashSet<>();
+    private Set<String> roles = new HashSet<>();
 
     public SecurityGroup(String name) {
         this.name = name;
@@ -60,6 +65,7 @@ public class SecurityGroup extends AbstractEntity {
         MAPOVERLAY,
         MAPBASELAYER,
         USER,
+        MAPGROUP,
         SECURITYGROUP,
         UNIT,
         MAPITEM,
@@ -81,5 +87,14 @@ public class SecurityGroup extends AbstractEntity {
         return this.roles.stream()
                 .map(a -> new SimpleGrantedAuthority("ROLE_" + a))
                 .toList();
+    }
+
+    public SecurityGroupDto toDto() {
+        SecurityGroupDto dto = new SecurityGroupDto();
+        dto.setId(this.getId());
+        dto.setName(this.getName());
+        dto.setSsoGroupName(this.getSsoGroupName());
+        dto.setRoles(this.getRoles().stream().toList());
+        return dto;
     }
 }

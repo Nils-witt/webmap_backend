@@ -3,12 +3,15 @@ package dev.nilswitt.webmap.views.components;
 import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import dev.nilswitt.webmap.entities.MapGroup;
 import dev.nilswitt.webmap.entities.MapItem;
+import dev.nilswitt.webmap.entities.repositories.MapGroupRepository;
 
 import java.util.function.Consumer;
 
@@ -22,15 +25,19 @@ public class MapItemEditDialog extends Dialog {
     private final NumberField latitudeField = new NumberField("Latitude");
     private final NumberField longitudeField = new NumberField("Longitude");
     private final NumberField altitudeField = new NumberField("Altitude");
+    private final ComboBox<MapGroup> mapGroupComboBox = new ComboBox<>("Map Group");
 
-
-    public MapItemEditDialog(Consumer<MapItem> editCallback) {
+    public MapItemEditDialog(Consumer<MapItem> editCallback, MapGroupRepository mapGroupRepository) {
         this.editCallback = editCallback;
         this.setModality(ModalityMode.STRICT);
         this.setCloseOnOutsideClick(false);
         this.setHeaderTitle("Edit Overlay");
 
+        this.mapGroupComboBox.setItemLabelGenerator(MapGroup::getName);
+        this.mapGroupComboBox.setItems(mapGroupRepository.findAll());
+
         this.binder.bind(nameField, MapItem::getName, MapItem::setName);
+        this.binder.bind(mapGroupComboBox, MapItem::getMapGroup, MapItem::setMapGroup);
 
         this.nameField.setRequired(true);
         binder.forField(latitudeField)
@@ -46,6 +53,7 @@ public class MapItemEditDialog extends Dialog {
         FormLayout formLayout = new FormLayout();
         formLayout.setAutoResponsive(true);
         formLayout.addFormRow(this.nameField);
+        formLayout.addFormRow(this.mapGroupComboBox);
         formLayout.addFormRow(this.latitudeField, this.longitudeField);
         formLayout.addFormRow(this.altitudeField);
 

@@ -103,6 +103,8 @@ public class UnitView extends VerticalLayout {
     private void configureGrid() {
         this.unitGrid.setItemsPageable(this::list);
         this.unitGrid.addColumn(Unit::getName).setKey("name").setHeader("Name").setSortable(true);
+        this.unitGrid.addColumn(Unit::isShowOnMap).setKey("showOnMap").setHeader("Show On Map").setSortable(true);
+        this.unitGrid.addColumn(unit -> unit.getPosition().getTimestamp()).setHeader("PosTime");
         this.unitGrid.addColumn(unit -> unit.getPosition().getLatitude()).setHeader("Latitude");
         this.unitGrid.addColumn(unit -> unit.getPosition().getLongitude()).setHeader("Longitude");
         this.unitGrid.addColumn(unit -> unit.getPosition().getAltitude()).setHeader("Altitude");
