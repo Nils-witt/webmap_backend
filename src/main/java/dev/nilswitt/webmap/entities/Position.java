@@ -2,10 +2,7 @@ package dev.nilswitt.webmap.entities;
 
 import dev.nilswitt.webmap.api.dtos.AbstractEntityDto;
 import jakarta.persistence.Entity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
@@ -16,6 +13,7 @@ public class Position extends AbstractEntity implements PositionInterface {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double altitude = 0.0;
+    private double accuracy = 0.0;
 
     public Position(double latitude, double longitude) {
         this.latitude = latitude;

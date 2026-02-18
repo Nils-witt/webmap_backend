@@ -58,7 +58,7 @@ public class User extends AbstractEntity implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
     @JsonIgnore
-    private Set<SecurityGroup> securityGroups = Set.of();
+    private Set<SecurityGroup> securityGroups = new HashSet<>();
 
     @Column
     private boolean isEnabled = true;

@@ -19,17 +19,20 @@ public class EmbeddedPosition implements PositionInterface {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double altitude = 0.0;
+    private double accuracy = 0.0;
 
-    @Column(nullable = true)
+    @Column
     private LocalDateTime timestamp = null;
 
-    public EmbeddedPosition(double latitude, double longitude) {
+    public EmbeddedPosition(double latitude, double longitude, double accuracy, LocalDateTime timestamp) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.accuracy = accuracy;
+        this.timestamp = timestamp;
     }
 
     public static EmbeddedPosition of(EmbeddedPositionDto entity) {
-        return new EmbeddedPosition(entity.getLatitude(), entity.getLongitude(), entity.getAltitude(), entity.getTimestamp());
+        return new EmbeddedPosition(entity.getLatitude(), entity.getLongitude(), entity.getAltitude(), entity.getAccuracy(), entity.getTimestamp());
     }
 
 }

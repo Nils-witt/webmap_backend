@@ -30,6 +30,7 @@ public class UnitEditDialog extends Dialog {
     private final NumberField latitudeField = new NumberField("Latitude");
     private final NumberField longitudeField = new NumberField("Longitude");
     private final NumberField altitudeField = new NumberField("Altitude");
+    private final NumberField accuracyField = new NumberField("Accuracy");
     private final DateTimePicker posTimePicker = new DateTimePicker();
 
     public UnitEditDialog(Consumer<Unit> editCallback) {
@@ -43,7 +44,7 @@ public class UnitEditDialog extends Dialog {
 
         FormLayout formLayout = new FormLayout();
         formLayout.addClassName("unit-form");
-        formLayout.add(nameField, statusField, speakRequestField, latitudeField, longitudeField, altitudeField, posTimePicker);
+        formLayout.add(nameField, statusField, speakRequestField, latitudeField, longitudeField,accuracyField, altitudeField, posTimePicker);
         formLayout.setResponsiveSteps(List.of(new ResponsiveStep("0", 1, LabelsPosition.ASIDE), new ResponsiveStep("600px", 2, LabelsPosition.ASIDE)));
 
         Button saveButton = new Button("Save", event -> {
@@ -99,7 +100,7 @@ public class UnitEditDialog extends Dialog {
         binder.forField(altitudeField)
                 .withNullRepresentation(0.0)
                 .bind(unit -> unit.getPosition().getAltitude(), (unit, value) -> unit.getPosition().setAltitude(value != null ? value : 0.0));
-
+        binder.forField(accuracyField).withNullRepresentation(0.0).bind(unit -> unit.getPosition().getAccuracy(), (unit, value) -> unit.getPosition().setAccuracy(value != null ? value : 0.0));
         binder.bind(posTimePicker, unit -> {
             if (unit.getPosition().getTimestamp() != null) {
                 return unit.getPosition().getTimestamp();

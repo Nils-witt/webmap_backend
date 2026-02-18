@@ -37,7 +37,7 @@ public class EntityUpdateNotifier {
         Payload payload = buildPayload(event);
         String baseTopic = "/updates/entities/" + event.className().toLowerCase();
         String entityTopic = baseTopic + "/" + event.id();
-        log.info("Updating entity {} to {}", entityTopic, baseTopic);
+        log.debug("Updating entity {} to {}", entityTopic, baseTopic);
 
         List<String> topics = List.of(baseTopic, entityTopic);
 

@@ -1,16 +1,13 @@
 package dev.nilswitt.webmap.api.controller;
 
+import dev.nilswitt.webmap.api.dtos.EmbeddedPositionDto;
 import dev.nilswitt.webmap.api.dtos.UnitDto;
 import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.api.exceptions.UnitNotFoundException;
-import dev.nilswitt.webmap.entities.EmbeddedPosition;
-import dev.nilswitt.webmap.entities.SecurityGroup;
-import dev.nilswitt.webmap.entities.Unit;
-import dev.nilswitt.webmap.entities.User;
+import dev.nilswitt.webmap.entities.*;
+import dev.nilswitt.webmap.entities.repositories.UnitPositionLogRepository;
 import dev.nilswitt.webmap.entities.repositories.UnitRepository;
 import dev.nilswitt.webmap.security.PermissionUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,11 +27,13 @@ public class UnitController {
     private final UnitRepository repository;
     private final UnitModelAssembler assembler;
     private final PermissionUtil permissionUtil;
+    private final UnitPositionLogRepository unitPositionLogRepository;
 
-    public UnitController(UnitRepository userRepository, UnitModelAssembler assembler, PermissionUtil permissionUtil) {
+    public UnitController(UnitRepository userRepository, UnitModelAssembler assembler, PermissionUtil permissionUtil, UnitPositionLogRepository unitPositionLogRepository) {
         this.repository = userRepository;
         this.assembler = assembler;
         this.permissionUtil = permissionUtil;
+        this.unitPositionLogRepository = unitPositionLogRepository;
     }
 
     @GetMapping("")
@@ -83,6 +82,26 @@ public class UnitController {
         entity.setPosition(EmbeddedPosition.of(newEntity.getPosition()));
         entity.setStatus(newEntity.getStatus());
         entity.setSpeakRequest(newEntity.isSpeakRequest());
+
+        return this.assembler.toModel(this.repository.save(entity).toDto());
+    }
+
+    @PostMapping("{id}/position")
+    EntityModel<UnitDto> replaceEntity(@RequestBody EmbeddedPositionDto newEntity, @PathVariable UUID id, @AuthenticationPrincipal User userDetails) {
+        Unit entity = this.repository.findById(id).orElseThrow(() -> new UnitNotFoundException(id));
+
+        if (!this.permissionUtil.hasAccess(userDetails, SecurityGroup.UserRoleScopeEnum.EDIT, entity)) {
+            throw new ForbiddenException("User does not have permission to edit overlays.");
+        }
+        // Check if postion has a newer timestamp
+        if (entity.getPosition().getTimestamp().isBefore(newEntity.getTimestamp())) {
+            entity.setPosition(EmbeddedPosition.of(newEntity));
+
+            UnitPositionLog log = new UnitPositionLog();
+            log.setUnit(entity);
+            log.setPosition(entity.getPosition());
+            this.unitPositionLogRepository.save(log);
+        }
 
         return this.assembler.toModel(this.repository.save(entity).toDto());
     }

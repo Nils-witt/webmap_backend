@@ -9,5 +9,7 @@ public class EmbeddedPositionDto {
     private double latitude = 0.0;
     private double longitude = 0.0;
     private double altitude = 0.0;
+    private double accuracy = 0.0;
+
     private LocalDateTime timestamp = null;
 }

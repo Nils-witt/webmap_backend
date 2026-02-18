@@ -56,6 +56,7 @@ public class Unit extends AbstractEntity {
         positionDto.setLatitude(getPosition().getLatitude());
         positionDto.setLongitude(getPosition().getLongitude());
         positionDto.setAltitude(getPosition().getAltitude());
+        positionDto.setAccuracy(getPosition().getAccuracy());
         positionDto.setTimestamp(getPosition().getTimestamp());
         dto.setPosition(positionDto);
         return dto;
@@ -73,6 +74,7 @@ public class Unit extends AbstractEntity {
             position.setLatitude(dto.getPosition().getLatitude());
             position.setLongitude(dto.getPosition().getLongitude());
             position.setAltitude(dto.getPosition().getAltitude());
+            position.setAccuracy(dto.getPosition().getAccuracy());
             position.setTimestamp(dto.getPosition().getTimestamp());
             unit.setPosition(position);
         }
