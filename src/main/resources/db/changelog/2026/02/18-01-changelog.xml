@@ -7,7 +7,7 @@
         objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
     <changeSet id="1771448218549-1" author="Nils-WItt">
         <addColumn tableName="map_item">
-            <column name="accuracy" type="DOUBLE"/>
+            <column name="accuracy" type="DOUBLE" defaultValue="0.0"/>
         </addColumn>
     </changeSet>
     <changeSet id="1771448218549-2" author="Nils-WItt">
@@ -15,7 +15,7 @@
     </changeSet>
     <changeSet id="1771448218549-3" author="Nils-WItt">
         <addColumn tableName="position">
-            <column name="accuracy" type="DOUBLE"/>
+            <column name="accuracy" type="DOUBLE" defaultValue="0.0"/>
         </addColumn>
     </changeSet>
     <changeSet id="1771448218549-4" author="Nils-WItt">
@@ -23,7 +23,7 @@
     </changeSet>
     <changeSet id="1771448218549-5" author="Nils-WItt">
         <addColumn tableName="unit">
-            <column name="accuracy" type="DOUBLE"/>
+            <column name="accuracy" type="DOUBLE" defaultValue="0.0"/>
         </addColumn>
     </changeSet>
     <changeSet id="1771448218549-6" author="Nils-WItt">
