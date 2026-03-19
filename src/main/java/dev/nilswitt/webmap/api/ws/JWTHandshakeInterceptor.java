@@ -1,9 +1,9 @@
 package dev.nilswitt.webmap.api.ws;
 
 import dev.nilswitt.webmap.entities.User;
-import dev.nilswitt.webmap.security.JWTComponent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.security.JWTTokenComponent;
+import lombok.extern.log4j.Log4j2;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.server.ServerHttpRequest;
@@ -13,16 +13,35 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+@Log4j2
 public class JWTHandshakeInterceptor implements HandshakeInterceptor {
 
 
-    private final Logger log = LogManager.getLogger(JWTHandshakeInterceptor.class);
+    private final JWTTokenComponent jwtComponent;
+    private final UserRepository userRepository;
 
-
-    private final JWTComponent jwtComponent;
-
-    JWTHandshakeInterceptor(JWTComponent jwtComponent) {
+    JWTHandshakeInterceptor(JWTTokenComponent jwtComponent, UserRepository userRepository) {
         this.jwtComponent = jwtComponent;
+        this.userRepository = userRepository;
+    }
+
+
+    private User getUser(String token) {
+        try {
+            User user = jwtComponent.getUserFromToken(token); // Validate token
+            return user;
+        } catch (Exception e) {
+            /* */
+        }
+
+        try {
+            String username = jwtComponent.getUsernameFromSSOToken(token);
+            return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        } catch (Exception e) {
+            /* */
+
+        }
+        throw new RuntimeException("Invalid token");
     }
 
     @Override
@@ -35,10 +54,11 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
                     if (jwtToken.startsWith("Bearer ")) {
                         jwtToken = jwtToken.substring(7);
                     }
-                    User user = jwtComponent.getUserFromToken(jwtToken); // Validate token
+
 
                     attributes.put("jwtToken", jwtToken);
-                    attributes.put("user", user);
+                    attributes.put("user", this.getUser(jwtToken)
+                    );
                     return true;
                 } catch (Exception e) {
                     log.warn("JWT validation failed: {}", e.getMessage());
@@ -55,10 +75,8 @@ public class JWTHandshakeInterceptor implements HandshakeInterceptor {
                 String[] keyValue = param.split("=");
                 if (keyValue.length == 2 && keyValue[0].equals("token")) {
                     try {
-                        User user = jwtComponent.getUserFromToken(keyValue[1]);
-
                         attributes.put("jwtToken", keyValue[1]);
-                        attributes.put("user", user);
+                        attributes.put("user", this.getUser(keyValue[1]));
                         return true;
                     } catch (Exception e) {
                         log.warn("JWT validation failed: {}", e.getMessage());

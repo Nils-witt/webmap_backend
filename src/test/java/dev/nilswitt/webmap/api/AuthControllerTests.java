@@ -2,7 +2,7 @@ package dev.nilswitt.webmap.api;
 
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
-import dev.nilswitt.webmap.security.JWTComponent;
+import dev.nilswitt.webmap.security.JWTTokenComponent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +36,7 @@ class AuthControllerTests {
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    JWTComponent jwtComponent;
+    JWTTokenComponent jwtComponent;
 
     @Test
     void shouldObtainTokenWithValidCredentials() throws UnsupportedEncodingException {

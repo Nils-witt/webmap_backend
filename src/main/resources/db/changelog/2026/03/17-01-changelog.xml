@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1773772398636-1" author="nilswitt">
+        <createTable tableName="unit_status_update">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_unitstatusupdate"/>
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="acknowledged" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1773772398636-2" author="nilswitt">
+        <addForeignKeyConstraint baseColumnNames="unit_id" baseTableName="unit_status_update"
+                                 constraintName="FK_UNITSTATUSUPDATE_ON_UNIT" referencedColumnNames="id"
+                                 referencedTableName="unit"/>
+    </changeSet>
+    <changeSet id="1773772398636-3" author="nilswitt">
+        <dropColumn columnName="show_on_map" tableName="unit"/>
+    </changeSet>
+    <changeSet id="1773772398636-4" author="nilswitt">
+        <dropColumn columnName="used_at" tableName="password_reset_token"/>
+    </changeSet>
+
+</databaseChangeLog>

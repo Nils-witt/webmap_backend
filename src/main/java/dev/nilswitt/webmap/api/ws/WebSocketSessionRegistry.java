@@ -1,7 +1,7 @@
 package dev.nilswitt.webmap.api.ws;
 
-import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.entities.User;
+import dev.nilswitt.webmap.exceptions.ForbiddenException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

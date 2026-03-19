@@ -1,20 +1,18 @@
 package dev.nilswitt.webmap.entities;
 
 import dev.nilswitt.webmap.api.dtos.EmbeddedPositionDto;
-
-import dev.nilswitt.webmap.api.dtos.TacticalIconDto;
-import dev.nilswitt.webmap.api.dtos.UnitDto;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.Column;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 
+/**
+ * Position implementation used for all position properties in the application.
+ */
 @Embeddable
 @Getter
 @Setter
@@ -22,19 +20,19 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class EmbeddedPosition implements PositionInterface {
 
-    @Column(name = "embeddedposition_latitude", nullable = true)
+    @Column(name = "embeddedposition_latitude")
     private Double latitude = 0.0;
 
-    @Column(name = "embeddedposition_longitude", nullable = true)
+    @Column(name = "embeddedposition_longitude")
     private Double longitude = 0.0;
 
-    @Column(name = "embeddedposition_altimeter", nullable = true)
+    @Column(name = "embeddedposition_altimeter")
     private Double altitude = 0.0;
 
-    @Column(name = "embeddedposition_accuracy", nullable = true)
+    @Column(name = "embeddedposition_accuracy")
     private Double accuracy = 0.0;
 
-    @Column(name = "embeddedposition_timestamp",nullable = true)
+    @Column(name = "embeddedposition_timestamp")
     private Instant timestamp = null;
 
     public EmbeddedPosition(Double latitude, Double longitude, Double accuracy, Instant timestamp) {
@@ -45,6 +43,9 @@ public class EmbeddedPosition implements PositionInterface {
     }
 
     public static EmbeddedPosition of(EmbeddedPositionDto entity) {
+        if (entity == null) {
+            return null;
+        }
         return new EmbeddedPosition(entity.getLatitude(), entity.getLongitude(), entity.getAltitude(), entity.getAccuracy(), entity.getTimestamp());
     }
 

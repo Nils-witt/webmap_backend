@@ -16,13 +16,7 @@ import java.util.*;
 
 @Setter
 @Entity
-@Table(name = "users", indexes = {
-        @Index(columnList = "username", name = "idx_users_username"),
-        @Index(columnList = "email", name = "idx_users_email")
-}, uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"username"}),
-        @UniqueConstraint(columnNames = {"email"})
-})
+@Table(name = "users", indexes = {@Index(columnList = "username", name = "idx_users_username"), @Index(columnList = "email", name = "idx_users_email")}, uniqueConstraints = {@UniqueConstraint(columnNames = {"username"}), @UniqueConstraint(columnNames = {"email"})})
 @Getter
 public class User extends AbstractEntity implements UserDetails {
 
@@ -33,18 +27,18 @@ public class User extends AbstractEntity implements UserDetails {
 
     @NotBlank
     @Size(max = 100)
-    @Column(nullable = false, unique = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String firstName;
 
     @NotBlank
     @Size(max = 100)
-    @Column(nullable = false, unique = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String lastName;
 
     @NotBlank
     @Email
     @Size(max = 255)
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank
@@ -53,10 +47,7 @@ public class User extends AbstractEntity implements UserDetails {
     private String password = "NaN";
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_security_group",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id"))
+    @JoinTable(name = "user_security_group", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "group_id"))
     @JsonIgnore
     private Set<SecurityGroup> securityGroups = new HashSet<>();
 
@@ -167,13 +158,7 @@ public class User extends AbstractEntity implements UserDetails {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + this.getId() +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", createdAt=" + this.getCreatedAt() +
-                ", updatedAt=" + this.getUpdatedAt() +
-                '}';
+        return "User{" + "id=" + this.getId() + ", username='" + username + '\'' + ", email='" + email + '\'' + ", createdAt=" + this.getCreatedAt() + ", updatedAt=" + this.getUpdatedAt() + '}';
     }
 
     public static User of(UserDto userDto) {
@@ -182,21 +167,14 @@ public class User extends AbstractEntity implements UserDetails {
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
+        user.setEnabled(userDto.isEnabled());
+        user.setLocked(userDto.isLocked());
         return user;
     }
 
     public UserDto toDto() {
 
-        return new UserDto(
-                this.getId(),
-                this.getCreatedAt(),
-                this.getUpdatedAt(),
-                this.getUsername(),
-                this.getEmail(),
-                this.getFirstName(),
-                this.getLastName(),
-                this.unit != null ? this.unit.getId() : null
-        );
+        return new UserDto(this.getId(), this.getCreatedAt(), this.getUpdatedAt(), this.getUsername(), this.getEmail(), this.getFirstName(), this.getLastName(), this.isEnabled(), this.isLocked(), this.getUnit() != null ? this.getUnit().getId() : null);
     }
 
 

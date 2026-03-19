@@ -1,7 +1,8 @@
 package dev.nilswitt.webmap.security;
 
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
-import dev.nilswitt.webmap.views.LoginView;
+import dev.nilswitt.webmap.base.ui.views.LoginView;
+import dev.nilswitt.webmap.security.filter.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -24,6 +25,14 @@ class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
+
+    /**
+     * Controls access to the UI
+     *
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Order(2)
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,6 +45,12 @@ class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Controls the access to the Websocket
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Order(0)
     @Bean
     SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
@@ -46,6 +61,12 @@ class SecurityConfig {
     }
 
 
+    /**
+     * Controlls the access to the REST API
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Order(1)
     @Bean
     SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {

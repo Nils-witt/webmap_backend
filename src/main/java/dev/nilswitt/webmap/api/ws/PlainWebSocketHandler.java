@@ -1,13 +1,13 @@
 package dev.nilswitt.webmap.api.ws;
 
 import dev.nilswitt.webmap.api.dtos.UnitDto;
-import dev.nilswitt.webmap.api.exceptions.ForbiddenException;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.Unit;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.UnitRepository;
 import dev.nilswitt.webmap.events.ChangeType;
-import dev.nilswitt.webmap.security.PermissionUtil;
+import dev.nilswitt.webmap.exceptions.ForbiddenException;
+import dev.nilswitt.webmap.security.PermissionVerifier;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,12 @@ public class PlainWebSocketHandler extends AbstractWebSocketHandler {
 
     private final WebSocketSessionRegistry sessionRegistry;
     private final UnitRepository unitRepository;
-    private final PermissionUtil permissionsUtil;
+    private final PermissionVerifier permissionsUtil;
     private final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
     private final Logger log = LoggerFactory.getLogger(PlainWebSocketHandler.class);
 
-    public PlainWebSocketHandler(WebSocketSessionRegistry sessionRegistry, UnitRepository unitRepository, PermissionUtil permissionsUtil) {
+    public PlainWebSocketHandler(WebSocketSessionRegistry sessionRegistry, UnitRepository unitRepository, PermissionVerifier permissionsUtil) {
         this.sessionRegistry = sessionRegistry;
         this.unitRepository = unitRepository;
         this.permissionsUtil = permissionsUtil;
@@ -82,18 +82,18 @@ public class PlainWebSocketHandler extends AbstractWebSocketHandler {
                 for (Unit unit : units) {
                     EntityUpdateNotifier.DownstreamMessage downstreamMessage = new EntityUpdateNotifier.DownstreamMessage();
                     downstreamMessage.topic = topic;
-                    EntityUpdateNotifier.Payload dpayload = new EntityUpdateNotifier.Payload();
-                    dpayload.entityType = unit.getClass().getSimpleName();
-                    dpayload.entityId = unit.getId();
-                    dpayload.changeType = ChangeType.RETRANSMIT;
 
                     UnitDto dto = unit.toDto();
                     User userObj = (User) session.getAttributes().get("user");
                     dto.setPermissions(this.permissionsUtil.getScopes(unit, userObj));
 
 
-                    dpayload.entity = dto;
-                    downstreamMessage.payload = dpayload;
+                    downstreamMessage.payload = EntityUpdateNotifier.EntityUpdatedPayload.builder()
+                            .entity(dto)
+                            .changeType(ChangeType.RETRANSMIT)
+                            .entityType(unit.getClass().getSimpleName())
+                            .entityId(unit.getId())
+                            .build();
 
                     session.sendMessage(new TextMessage(ow.writeValueAsString(downstreamMessage)));
                 }

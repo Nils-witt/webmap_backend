@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This Entity is to store the Tactical Icons of units.
+ * It is designed to be used in conjunction with <a href="https://taktische-zeichen.dev/">Taktische Zeichen Libary</a>
+ */
 @Slf4j
 @Embeddable
 @Getter
@@ -19,6 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class TacticalIcon {
 
+    /**
+     * Transforms the Entity in to a DTO for the API
+     *
+     * @return The Entity as DTO
+     */
     public TacticalIconDto toDto() {
         TacticalIconDto dto = new TacticalIconDto();
         try {
@@ -38,7 +47,13 @@ public class TacticalIcon {
         return dto;
     }
 
-    public static TacticalIcon fromDto(TacticalIconDto dto) {
+    /**
+     * Creates an Entity from an DTO
+     *
+     * @param dto The Dto to construct from
+     * @return Constructed Entity
+     */
+    public static TacticalIcon of(TacticalIconDto dto) {
         if(dto == null) {
             return new TacticalIcon();
         }
@@ -143,7 +158,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -174,7 +189,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -239,7 +254,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -270,7 +285,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -299,7 +314,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -406,7 +421,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 
@@ -431,7 +446,7 @@ public class TacticalIcon {
                     return value;
                 }
             }
-            throw new IllegalArgumentException("Unknown id: " + id);
+            return OHNE;
         }
     }
 }

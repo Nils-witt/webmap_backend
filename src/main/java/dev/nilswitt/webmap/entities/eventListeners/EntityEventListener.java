@@ -7,10 +7,12 @@ import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+/**
+ * This Component is triggered by Hibernate Change Events and is publishing them as EntityChangedEvent to the Spring Application Context.
+ * This allows us to react to changes in our entities in a decoupled way, for example by notifying WebSocket clients about updates.
+ */
 @Slf4j
 public class EntityEventListener {
     private ApplicationEventPublisher applicationEventPublisher;

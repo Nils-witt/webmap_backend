@@ -26,15 +26,8 @@ public class PasswordResetToken extends AbstractEntity {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
-    @Column(name = "used_at")
-    private Instant usedAt;
-
-    public boolean isExpired(Instant now) {
-        return this.expiresAt != null && this.expiresAt.isBefore(now);
-    }
-
-    public boolean isUsed() {
-        return this.usedAt != null;
+    public boolean isExpired() {
+        return this.expiresAt != null && this.expiresAt.isBefore(Instant.now());
     }
 
     @Override

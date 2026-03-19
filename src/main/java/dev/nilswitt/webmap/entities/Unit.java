@@ -1,7 +1,5 @@
 package dev.nilswitt.webmap.entities;
 
-import dev.nilswitt.webmap.api.dtos.EmbeddedPositionDto;
-import dev.nilswitt.webmap.api.dtos.TacticalIconDto;
 import dev.nilswitt.webmap.api.dtos.UnitDto;
 import dev.nilswitt.webmap.entities.eventListeners.EntityEventListener;
 import jakarta.persistence.*;
@@ -25,16 +23,13 @@ public class Unit extends AbstractEntity {
     private TacticalIcon icon = new TacticalIcon();
 
     @Embedded
-    private EmbeddedPosition position;
+    private EmbeddedPosition position = new EmbeddedPosition();
 
     @Column(nullable = false)
     private int status = 6;
 
     @Column(nullable = false)
     private boolean speakRequest = false;
-
-    @Column(nullable = false)
-    private boolean showOnMap = false;
 
     @ManyToOne
     @JoinColumn(name = "mission_group_id")
@@ -48,41 +43,26 @@ public class Unit extends AbstractEntity {
     }
 
     public UnitDto toDto() {
-        EmbeddedPositionDto positionDto = new EmbeddedPositionDto();
-        positionDto.setLatitude(getPosition().getLatitude());
-        positionDto.setLongitude(getPosition().getLongitude());
-        positionDto.setAltitude(getPosition().getAltitude());
-        positionDto.setAccuracy(getPosition().getAccuracy());
-        positionDto.setTimestamp(getPosition().getTimestamp());
-
         return new UnitDto(
                 this.getId(),
                 this.getCreatedAt(),
                 this.getUpdatedAt(),
                 this.getName(),
-                getIcon() != null ? getIcon().toDto() : new TacticalIconDto(),
-                positionDto,
-                this.getStatus(),
+                getIcon() != null ? this.getIcon().toDto() : null,
+                this.getPosition() != null ? this.getPosition().toDto() : null,
                 this.isSpeakRequest(),
-                this.showOnMap
+                this.status
         );
     }
 
     public static Unit of(UnitDto dto) {
         Unit unit = new Unit();
         unit.setName(dto.getName());
-        unit.setStatus(dto.getStatus());
+        unit.setIcon(TacticalIcon.of(dto.getIcon()));
         unit.setSpeakRequest(dto.isSpeakRequest());
-        unit.setShowOnMap(dto.isShowOnMap());
-        unit.setIcon(TacticalIcon.fromDto(dto.getIcon()));
+        unit.setStatus(dto.getStatus());
         if (dto.getPosition() != null) {
-            EmbeddedPosition position = new EmbeddedPosition();
-            position.setLatitude(dto.getPosition().getLatitude());
-            position.setLongitude(dto.getPosition().getLongitude());
-            position.setAltitude(dto.getPosition().getAltitude());
-            position.setAccuracy(dto.getPosition().getAccuracy());
-            position.setTimestamp(dto.getPosition().getTimestamp());
-            unit.setPosition(position);
+            unit.setPosition(EmbeddedPosition.of(dto.getPosition()));
         }
         return unit;
     }

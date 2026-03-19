@@ -18,10 +18,10 @@ public class MapBaseLayer extends AbstractEntity {
 
     @NotBlank
     @Size(max = 100)
-    @Column(nullable = false, unique = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String url;
 
     @Column
@@ -29,7 +29,6 @@ public class MapBaseLayer extends AbstractEntity {
 
 
     public MapBaseLayerDto toDto() {
-
         return new MapBaseLayerDto(this.getId(), this.getCreatedAt(), this.getUpdatedAt(), this.getName(), this.getUrl(), this.getCacheUrl());
     }
 

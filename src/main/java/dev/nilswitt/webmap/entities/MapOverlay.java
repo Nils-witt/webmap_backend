@@ -77,4 +77,14 @@ public class MapOverlay extends AbstractEntity {
 
         return new MapOverlayDto(this.getId(), this.getCreatedAt(), this.getUpdatedAt(), this.getName(), this.getBaseUrl(), this.getBasePath(), this.getTilePathPattern(), this.getLayerVersion(), this.getMapGroup() != null ? this.getMapGroup().getId() : null);
     }
+
+    public static MapOverlay of(MapOverlayDto dto) {
+        MapOverlay mapOverlay = new MapOverlay();
+        mapOverlay.setName(dto.getName());
+        mapOverlay.setBaseUrl(dto.getBaseUrl());
+        mapOverlay.setBasePath(dto.getBasePath());
+        mapOverlay.setTilePathPattern(dto.getTilePathPattern());
+        mapOverlay.setLayerVersion(dto.getLayerVersion());
+        return mapOverlay;
+    }
 }

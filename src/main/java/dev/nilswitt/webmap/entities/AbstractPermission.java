@@ -8,60 +8,48 @@ import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Base for permission assignment, established for which entities permissions can be assigned
+ */
 @MappedSuperclass
+@Getter
+@Setter
 public abstract class AbstractPermission extends AbstractEntity {
 
     @Enumerated
-    @Getter
-    @Setter
+
     private SecurityGroup.UserRoleScopeEnum scope = SecurityGroup.UserRoleScopeEnum.VIEW;
 
     @ManyToOne
     @JoinColumn(name = "map_overlay_id")
-    @Getter
-    @Setter
     private MapOverlay mapOverlay;
 
     @ManyToOne
     @JoinColumn(name = "map_item_id")
-    @Getter
-    @Setter
     private MapItem mapItem;
 
     @ManyToOne
     @JoinColumn(name = "map_group_id")
-    @Getter
-    @Setter
     private MapGroup mapGroup;
 
     @ManyToOne
     @JoinColumn(name = "unit_id")
-    @Getter
-    @Setter
     private Unit unit;
 
     @ManyToOne
     @JoinColumn(name = "map_baseLayer_id")
-    @Getter
-    @Setter
     private MapBaseLayer baseLayer;
 
     @ManyToOne
     @JoinColumn(name = "entity_user_id")
-    @Getter
-    @Setter
     private User entityUser;
 
     @ManyToOne
     @JoinColumn(name = "photo_id")
-    @Getter
-    @Setter
     private Photo photo;
 
     @ManyToOne
     @JoinColumn(name = "mission_group_id")
-    @Getter
-    @Setter
     private MissionGroup missionGroup;
 
     public AbstractPermission() {

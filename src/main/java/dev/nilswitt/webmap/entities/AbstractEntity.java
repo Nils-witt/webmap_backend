@@ -8,6 +8,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 
+/**
+ * This is the base Entity class. Which holds the data shared across all Entity-types
+ * id, createdAt, updatedAt
+ */
 @MappedSuperclass
 @Getter
 public abstract class AbstractEntity {

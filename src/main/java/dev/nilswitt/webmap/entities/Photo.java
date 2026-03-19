@@ -12,6 +12,7 @@ public class Photo extends AbstractEntity {
 
     @Column
     private String name;
+
     @Column
     private String path;
 

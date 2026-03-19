@@ -1,10 +1,10 @@
 package dev.nilswitt.webmap;
 
-import dev.nilswitt.webmap.entities.DatabaseInitAdminUserRecord;
 import dev.nilswitt.webmap.entities.SecurityGroup;
 import dev.nilswitt.webmap.entities.User;
 import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
 import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.records.DatabaseInitAdminUserRecord;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

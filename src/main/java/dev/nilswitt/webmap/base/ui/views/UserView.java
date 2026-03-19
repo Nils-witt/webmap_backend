@@ -1,0 +1,161 @@
+package dev.nilswitt.webmap.base.ui.views;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import dev.nilswitt.webmap.base.ui.ViewToolbar;
+import dev.nilswitt.webmap.base.ui.views.components.PasswordChangeDialog;
+import dev.nilswitt.webmap.base.ui.views.components.UserEditDialog;
+import dev.nilswitt.webmap.base.ui.views.filters.UserFilter;
+import dev.nilswitt.webmap.entities.SecurityGroup;
+import dev.nilswitt.webmap.entities.User;
+import dev.nilswitt.webmap.entities.repositories.SecurityGroupRepository;
+import dev.nilswitt.webmap.entities.repositories.UnitRepository;
+import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.security.PermissionVerifier;
+import jakarta.annotation.security.RolesAllowed;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
+import java.util.Objects;
+
+@Route("ui/users")
+@Menu(order = 5, icon = "vaadin:user", title = "Users")
+@RolesAllowed("USER_VIEW")
+public class UserView extends VerticalLayout {
+    private final Grid<User> userGrid;
+    private final Button createBtn;
+    private final UserEditDialog editDialog;
+    private final PasswordChangeDialog passwordChangeDialog;
+    private final UserRepository userRepository;
+    private final UserFilter userFilter;
+    private final UnitRepository unitRepository;
+
+    private final AuthenticationContext authenticationContext;
+
+
+    public UserView(UserRepository userRepository, SecurityGroupRepository securityGroupRepository, PasswordEncoder passwordEncoder, AuthenticationContext authenticationContext, UnitRepository unitRepository) {
+        this.userGrid = new Grid<>();
+        this.userRepository = userRepository;
+        this.authenticationContext = authenticationContext;
+        this.passwordChangeDialog = new PasswordChangeDialog(userRepository, passwordEncoder);
+
+        this.editDialog = new UserEditDialog((user) -> {
+            this.userRepository.save(user);
+            this.userGrid.getDataProvider().refreshAll();
+        }, securityGroupRepository, unitRepository);
+
+
+        this.createBtn = new Button("Create", event -> {
+            User actingUser = currentUser();
+            if (!PermissionVerifier.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
+                    SecurityGroup.UserRoleScopeEnum.CREATE)) {
+                Notification.show("You cannot create users");
+                return;
+            }
+            this.editDialog.open(null);
+        });
+        this.createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        this.setUpGrid();
+
+        this.userFilter = new UserFilter((userExample -> this.userGrid.getDataProvider().refreshAll()));
+        this.userFilter.setUp(userGrid);
+
+        this.setSizeFull();
+        this.setPadding(false);
+        this.setSpacing(false);
+        this.getStyle().setOverflow(Style.Overflow.HIDDEN);
+
+        this.add(new ViewToolbar("User List", ViewToolbar.group(createBtn)));
+
+        this.add(userGrid);
+        this.add(editDialog);
+
+        new PersonContextMenu(userGrid);
+        this.unitRepository = unitRepository;
+    }
+
+    private void setUpGrid() {
+        this.userGrid.addColumn(User::getUsername).setKey("username").setHeader("Username").setSortable(true).setComparator(User::getUsername);
+        this.userGrid.addColumn(User::getFirstName).setKey("firstName").setHeader("First Name").setSortable(true);
+        this.userGrid.addColumn(User::getLastName).setKey("lastName").setHeader("Last Name").setSortable(true);
+        this.userGrid.addColumn(User::getEmail).setKey("email").setHeader("Email").setSortable(true);
+        this.userGrid.addColumn(User::isEnabled).setKey("enabled").setHeader("Enabled").setSortable(true);
+        this.userGrid.addColumn(u -> !u.isAccountNonLocked()).setKey("isLocked").setHeader("Is Locked").setSortable(true);
+        this.userGrid.addColumn(user -> String.join(", ", user.getSecurityGroups().stream().map(SecurityGroup::getName).toList()))
+                .setHeader("Groups").setKey("groups");
+        this.userGrid.setItemsPageable(this::list);
+
+        this.userGrid.setEmptyStateText("There are no users");
+        this.userGrid.setSizeFull();
+        this.userGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+    }
+
+    private List<User> list(Pageable pageable) {
+        return this.userRepository.findAll(this.userFilter.getExample(), pageable).stream().toList();
+    }
+
+    private User currentUser() {
+        return this.authenticationContext.getAuthenticatedUser(User.class).orElse(null);
+    }
+
+
+    private class PersonContextMenu extends GridContextMenu<User> {
+        public PersonContextMenu(Grid<User> target) {
+
+            super(target);
+            this.addItem("Edit", event -> event.getItem().ifPresent(user -> {
+                User actingUser = currentUser();
+                if (!PermissionVerifier.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
+                        SecurityGroup.UserRoleScopeEnum.EDIT)) {
+                    Notification.show("You cannot edit users");
+                    return;
+                }
+                editDialog.open(user);
+            }));
+            this.addItem("Delete", event -> event.getItem().ifPresent(user -> {
+                User actingUser = currentUser();
+                if (!PermissionVerifier.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
+                        SecurityGroup.UserRoleScopeEnum.DELETE)) {
+                    Notification.show("You cannot delete users");
+                    return;
+                }
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader("Delete User");
+                confirmDialog.setText("Are you sure you want to delete user '" + user.getUsername() + "'?");
+                confirmDialog.setCancelable(true);
+                confirmDialog.setConfirmText("Delete");
+                confirmDialog.addConfirmListener(e -> {
+                    userRepository.delete(user);
+                    userGrid.getDataProvider().refreshAll();
+                    confirmDialog.close();
+                    this.remove(confirmDialog);
+                });
+                add(confirmDialog);
+                confirmDialog.open();
+            }));
+
+            this.addItem("Change Password", event -> event.getItem().ifPresent(user -> {
+                User actingUser = currentUser();
+                if (!PermissionVerifier.hasAnyScope(actingUser, SecurityGroup.UserRoleTypeEnum.USER,
+                        SecurityGroup.UserRoleScopeEnum.ADMIN)) {
+                    Notification.show("You cannot change passwords");
+                    return;
+                }
+                passwordChangeDialog.open(user);
+            }));
+            setDynamicContentHandler(Objects::nonNull);
+        }
+    }
+}

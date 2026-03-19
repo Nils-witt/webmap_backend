@@ -1,6 +1,7 @@
 package dev.nilswitt.webmap.api.ws;
 
-import dev.nilswitt.webmap.security.JWTComponent;
+import dev.nilswitt.webmap.entities.repositories.UserRepository;
+import dev.nilswitt.webmap.security.JWTTokenComponent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -11,18 +12,22 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final PlainWebSocketHandler plainWebSocketHandler;
-    private final JWTComponent jwtComponent;
+    private final JWTTokenComponent jwtComponent;
+    private final UserRepository userRepository;
 
-    public WebSocketConfig(PlainWebSocketHandler plainWebSocketHandler, JWTComponent jwtComponent) {
+    private final String WS_PATH = "/api/ws";
+
+    public WebSocketConfig(PlainWebSocketHandler plainWebSocketHandler, JWTTokenComponent jwtComponent, UserRepository userRepository) {
         this.plainWebSocketHandler = plainWebSocketHandler;
         this.jwtComponent = jwtComponent;
+        this.userRepository = userRepository;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
-                .addHandler(plainWebSocketHandler, "/api/ws")
-                .addInterceptors(new JWTHandshakeInterceptor(jwtComponent))
+                .addHandler(this.plainWebSocketHandler, this.WS_PATH)
+                .addInterceptors(new JWTHandshakeInterceptor(this.jwtComponent, this.userRepository))
                 .setAllowedOriginPatterns("*");
     }
 

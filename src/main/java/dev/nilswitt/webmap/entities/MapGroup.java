@@ -19,6 +19,7 @@ import java.util.Set;
 @Getter
 @Setter
 public class MapGroup extends AbstractEntity {
+
     @NotBlank
     @Size(max = 100)
     @Column(nullable = false, unique = true, length = 100)
